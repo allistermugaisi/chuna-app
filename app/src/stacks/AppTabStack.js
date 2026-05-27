@@ -38,7 +38,7 @@ const AppTabStack = () => {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: "#F26B61",
+        tabBarActiveTintColor: "#10B981",
         tabBarInactiveTintColor: "#1F2937", // #0F1B6D
         tabBarStyle: getTabBarVisibility(route),
       })}
@@ -52,7 +52,7 @@ const AppTabStack = () => {
             <Octicons
               name="home"
               size={size}
-              color={focused ? "#F26B61" : "#1F2937"}
+              color={focused ? "#10B981" : "#1F2937"}
             />
           ),
         })}
@@ -66,7 +66,7 @@ const AppTabStack = () => {
             <Entypo
               name="compass"
               size={size}
-              color={focused ? "#F26B61" : "#1F2937"}
+              color={focused ? "#10B981" : "#1F2937"}
             />
           ),
         })}
@@ -80,7 +80,7 @@ const AppTabStack = () => {
             <AntDesign
               name="heart"
               size={size}
-              color={focused ? "#F26B61" : "#1F2937"}
+              color={focused ? "#10B981" : "#1F2937"}
             />
           ),
         })}
@@ -93,7 +93,7 @@ const AppTabStack = () => {
             <AntDesign
               name="message"
               size={size}
-              color={focused ? "#F26B61" : "#1F2937"}
+              color={focused ? "#10B981" : "#1F2937"}
             />
           ),
         })}
@@ -106,7 +106,7 @@ const AppTabStack = () => {
             <FontAwesome5
               name="user"
               size={size}
-              color={focused ? "#F26B61" : "#1F2937"}
+              color={focused ? "#10B981" : "#1F2937"}
             />
           ),
         })}

@@ -30,7 +30,7 @@ const HomeRewards = () => {
               }}
             >
               <Image
-                source={require("../../../assets/sell3.jpg")}
+                source={require("../../../../assets/sell3.jpg")}
                 resizeMode="cover"
                 style={{
                   width: "100%",

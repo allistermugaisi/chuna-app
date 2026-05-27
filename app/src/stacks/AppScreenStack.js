@@ -17,7 +17,7 @@ import {
   CardStyleInterpolators,
 } from "@react-navigation/stack";
 
-import { Discover, Explore, Matches, Chats, Profile } from "../screens/app";
+import { Home, Explore, Matches, Chats, Profile } from "../screens/app";
 
 import { Notifications } from "../global";
 

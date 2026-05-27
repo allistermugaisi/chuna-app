@@ -18,7 +18,7 @@ import HomeTopMovers from "./HomeTopMovers";
 import HomeWatchList from "./HomeWatchList";
 import axios from "axios";
 
-import { COLORS, SIZES, FONTS, icons, images } from "../../constants";
+import { COLORS, SIZES, FONTS, icons, images } from "../../../constants";
 
 const { width, height } = Dimensions.get("window");
 
@@ -365,11 +365,11 @@ const Home = () => {
             }}
           >
             <Image
-              source={require("../../../assets/wallet.png")}
+              source={require("../../../../assets/wallet.png")}
               style={{ width: width / 2.2099, height: height / 2.9 }}
             />
             <Text style={{ fontSize: 20, fontWeight: "600", paddingTop: 10 }}>
-              Welcome to FaxxPay
+              Welcome to Chuna
             </Text>
             <Text
               style={{
