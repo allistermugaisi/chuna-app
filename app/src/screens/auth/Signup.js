@@ -6,13 +6,14 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
+  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 // import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, HelperText, useTheme } from "react-native-paper";
-import { FontAwesome6, AntDesign } from "@expo/vector-icons";
+import { FontAwesome6, Ionicons, AntDesign } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 
 // Redux imports
@@ -104,12 +105,19 @@ const SignInScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle="default" />
       <View style={styles.header}>
-        <FontAwesome6
+        {/* <FontAwesome6
           name="arrow-left"
           size={24}
           color="#fff"
           onPress={() => navigation.goBack()}
-        />
+        /> */}
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation?.goBack()}
+          activeOpacity={0.75}
+        >
+          <Ionicons name="arrow-back" size={20} color="#fff" />
+        </TouchableOpacity>
         <Text style={styles.text_header}>Create your account</Text>
       </View>
       {/* <TextInputAvoidingView> */}
@@ -138,8 +146,6 @@ const SignInScreen = ({ navigation }) => {
                   label="First Name"
                   style={
                     Platform.OS === "ios" && {
-                      flex: 1,
-                      height: 50,
                       paddingHorizontal: 0,
                     }
                   }
@@ -177,8 +183,6 @@ const SignInScreen = ({ navigation }) => {
                   label="Last Name"
                   style={
                     Platform.OS === "ios" && {
-                      flex: 1,
-                      height: 50,
                       paddingHorizontal: 0,
                     }
                   }
@@ -217,7 +221,6 @@ const SignInScreen = ({ navigation }) => {
               label="Email address"
               style={
                 Platform.OS === "ios" && {
-                  flex: 1,
                   height: 50,
                   paddingHorizontal: 0,
                 }
@@ -261,8 +264,6 @@ const SignInScreen = ({ navigation }) => {
               label="Phone Number"
               style={
                 Platform.OS === "ios" && {
-                  flex: 1,
-                  height: 50,
                   paddingHorizontal: 0,
                 }
               }
@@ -303,8 +304,6 @@ const SignInScreen = ({ navigation }) => {
               label="Password"
               style={
                 Platform.OS === "ios" && {
-                  flex: 1,
-                  height: 50,
                   paddingHorizontal: 0,
                 }
               }
@@ -353,8 +352,6 @@ const SignInScreen = ({ navigation }) => {
               label="Confirm Password"
               style={
                 Platform.OS === "ios" && {
-                  flex: 1,
-                  height: 50,
                   paddingHorizontal: 0,
                 }
               }
@@ -468,6 +465,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#f2f2f2",
     paddingBottom: 5,
+  },
+  backBtn: {
+    alignSelf: "flex-start",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
   },
   button: {
     alignItems: "center",

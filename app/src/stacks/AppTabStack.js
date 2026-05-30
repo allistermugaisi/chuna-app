@@ -20,7 +20,7 @@ import {
   //   ExploreStackScreen,
   //   MatchesStackScreen,
   //   ChatStackScreen,
-  //   ProfileStackScreen,
+  ProfileStackScreen,
 } from "./AppScreenStack";
 
 const Tab = createBottomTabNavigator();
@@ -98,6 +98,7 @@ const AppTabStack = () => {
           ),
         })}
       />
+       */}
       <Tab.Screen
         name="Profile"
         component={ProfileStackScreen}
@@ -110,7 +111,7 @@ const AppTabStack = () => {
             />
           ),
         })}
-      /> */}
+      />
     </Tab.Navigator>
   );
 };

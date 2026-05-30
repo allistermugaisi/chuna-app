@@ -6,38 +6,35 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
-  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, HelperText, useTheme } from "react-native-paper";
-import {
-  FontAwesome6,
-  Ionicons,
-  AntDesign,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 
 // Redux imports
 import { useDispatch, useSelector } from "react-redux";
+// import { resetPassword } from '../../store/actions/authActions';
+// import { clearErrors } from '../../store/actions/errorActions';
 import { getValueFor } from "../../utils/secureStore";
-// import { loginUser } from "../../store/actions/authActions";
-// import { clearErrors } from "../../store/actions/errorActions";
 
 // keyboard avoiding view
-// import TextInputAvoidingView from "../../components/KeyboardAvoidingWrapper";
+// import TextInputAvoidingView from '../../components/KeyboardAvoidingWrapper';
 import { StyledButton, ButtonText } from "../../components/styles";
 
-const Login = ({ navigation }) => {
+const ChangePin = ({ navigation }) => {
+  // const toast = useToast();
   const { colors } = useTheme();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
   let error = useSelector((state) => state.error);
-  let emailPassword = useSelector((state) => state.auth.emailPassword);
+  let passwordResetSuccess = useSelector(
+    (state) => state.auth.passwordResetSuccess,
+  );
 
   const [showPassword, setShowPassword] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -45,6 +42,7 @@ const Login = ({ navigation }) => {
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm({ mode: "onBlur" });
 
@@ -53,69 +51,58 @@ const Login = ({ navigation }) => {
   };
 
   const onSubmit = async (data) => {
-    // Attempt to authenticate user
-    // setButtonLoading(true);
-    // await dispatch(loginUser(data));
+    const { password, password_confirmation } = data;
+    const storedOTP = await getValueFor("ResetPasswordOTPCode");
+    if (storedOTP) {
+      const newData = {
+        reset_password_token: storedOTP,
+        password,
+        password_confirmation,
+      };
+      setButtonLoading(true);
+      // Attempt to authenticate user
+      await dispatch(resetPassword(newData));
+    }
   };
 
-  useEffect(() => {
-    // Check for register error
-    // if (error.id === "LOGIN_FAIL") {
-    //   setButtonLoading(false);
-    //   Toast.show({
-    //     type: "error",
-    //     text1: "Invalid credentials. Please try again!",
-    //     text2: "Either your email address or password is incorrect.",
-    //   });
-    //   dispatch(clearErrors());
-    // } else {
-    //   setButtonLoading(false);
-    // }
-  }, []);
+  //   useEffect(() => {
+  //     // Check for register error
+  //     if (error.id === "RESET_PASSWORD_FAIL") {
+  //       setButtonLoading(false);
+  //       Toast.show({
+  //         type: "error",
+  //         text1: "Password reset error. Please try again!",
+  //         text2: "Oops, something went wrong",
+  //       });
+  //       dispatch(clearErrors());
+  //     } else {
+  //       setButtonLoading(false);
+  //     }
+  //   }, [error]);
 
   useEffect(() => {
-    if (emailPassword) {
-      isEmailPhoneVerified();
+    if (passwordResetSuccess) {
+      navigation.navigate("Welcome");
       setButtonLoading(false);
       Toast.show({
-        type: "info",
-        text1: `You're almost there!`,
-        text2: "Please provide the requested OTP",
+        type: "success",
+        text1: "Password reset success!",
+        text2: "Kindly login using your new password",
       });
     }
-  }, [emailPassword]);
-
-  const isEmailPhoneVerified = async () => {
-    const tempToken = await getValueFor("tempToken");
-    const tempUserToken = await getValueFor("tempUserToken");
-
-    if (tempToken) {
-      navigation.navigate("OTPVerifyPhone");
-    } else if (tempUserToken) {
-      navigation.navigate("OTPVerifyEmail");
-    } else {
-      navigation.navigate("OTPScreen");
-    }
-  };
+  }, [passwordResetSuccess]);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="default" />
+      <StatusBar barStyle="light-content" />
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        {/* <FontAwesome6
+        <FontAwesome6
           name="arrow-left"
           size={24}
-          color="white"
+          color="#fff"
           onPress={() => navigation.navigate("Welcome")}
-        /> */}
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation?.goBack()}
-          activeOpacity={0.75}
-        >
-          <Ionicons name="arrow-back" size={20} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.text_header}>Welcome back!</Text>
+        />
+        <Text style={styles.text_header}>Change your Pin</Text>
       </View>
       {/* <TextInputAvoidingView style={{ marginBottom: insets.bottom }}> */}
       <Animatable.View
@@ -129,49 +116,14 @@ const Login = ({ navigation }) => {
       >
         <Controller
           control={control}
-          type="email"
-          name="email"
-          render={({ field: { onChange, value, onBlur } }) => (
-            <TextInput
-              mode="outlined"
-              autoFocus={Platform.OS === "ios" ? true : false}
-              keyboardType="email-address"
-              label="Email address"
-              placeholder="Enter your email address"
-              value={value}
-              theme={{
-                colors: {
-                  primary: "#00ab55",
-                  underlineColor: "transparent",
-                },
-              }}
-              onBlur={onBlur}
-              onChangeText={(value) => onChange(value)}
-            />
-          )}
-          rules={{
-            required: {
-              value: true,
-              message: "Email address is required",
-            },
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Invalid email address",
-            },
-          }}
-        />
-        <HelperText type="error" style={styles.helper}>
-          {errors?.email?.message}
-        </HelperText>
-        <Controller
-          control={control}
           name="password"
           render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               mode="outlined"
-              label="Password"
+              label="New pin"
+              autoFocus
               secureTextEntry={showPassword ? false : true}
-              placeholder="Enter password"
+              placeholder="Enter new pin"
               value={value}
               theme={{
                 colors: {
@@ -192,16 +144,58 @@ const Login = ({ navigation }) => {
           rules={{
             required: {
               value: true,
-              message: "Password is required",
+              message: "Pin is required",
             },
             minLength: {
-              value: 8,
-              message: "Password should be atleast 8 characters",
+              value: 6,
+              message: "Pin should be atleast 6 characters",
             },
           }}
         />
 
-        <HelperText type="error">{errors?.password?.message}</HelperText>
+        <HelperText type="error" style={styles.helper}>
+          {errors?.password?.message}
+        </HelperText>
+
+        <Controller
+          control={control}
+          name="password_confirmation"
+          render={({ field: { onChange, value, onBlur } }) => (
+            <TextInput
+              mode="outlined"
+              label="Confirm Pin"
+              secureTextEntry={showPassword ? false : true}
+              placeholder="Confirm your pin"
+              value={value}
+              theme={{
+                colors: {
+                  primary: "#00ab55",
+                  underlineColor: "transparent",
+                },
+              }}
+              onBlur={onBlur}
+              onChangeText={(value) => onChange(value)}
+              right={
+                <TextInput.Icon
+                  onPress={togglePassword}
+                  name={showPassword ? "eye-off" : "eye"}
+                />
+              }
+            />
+          )}
+          rules={{
+            required: {
+              value: true,
+              message: "Confirm Pin is required",
+            },
+            validate: (value) =>
+              value === getValues("password") || "Pins do not match",
+          }}
+        />
+
+        <HelperText type="error" style={styles.helper}>
+          {errors?.password_confirmation?.message}
+        </HelperText>
 
         <StyledButton
           disabled={buttonLoading ? true : false}
@@ -210,26 +204,16 @@ const Login = ({ navigation }) => {
           {buttonLoading ? (
             <ActivityIndicator color="#fff" size="small" />
           ) : (
-            <ButtonText>Sign in</ButtonText>
+            <ButtonText>Change Pin</ButtonText>
           )}
         </StyledButton>
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity onPress={() => navigation.navigate("OTPScreen")}>
-            <Text style={{ color: "#00ab55", marginTop: 15 }}>Change pin?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={{ color: "#00ab55", marginTop: 15 }}>
-              Privacy policy
-            </Text>
-          </TouchableOpacity>
-        </View>
       </Animatable.View>
       {/* </TextInputAvoidingView> */}
     </View>
   );
 };
 
-export default Login;
+export default ChangePin;
 
 const { height } = Dimensions.get("screen");
 
@@ -239,7 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#00ab55",
   },
   header: {
-    flex: Platform.OS === "ios" ? 1 : 2.7,
+    flex: Platform.OS === "ios" ? 1.2 : 3.3,
     justifyContent: "flex-end",
     paddingHorizontal: 20,
     paddingBottom: 10,
@@ -260,16 +244,6 @@ const styles = StyleSheet.create({
   text_footer: {
     color: "#05375a",
     fontSize: 18,
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
   },
   action: {
     flexDirection: "row",

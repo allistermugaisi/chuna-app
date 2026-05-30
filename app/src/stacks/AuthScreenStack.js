@@ -4,14 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 // Auth screens
-import {
-  Welcome,
-  Login,
-  Signup,
-  // ForgotPassword,
-  // OTPScreen,
-  // ResetPassword,
-} from "../screens/auth";
+import { Welcome, Login, Signup, OTPScreen, ChangePin } from "../screens/auth";
 
 import { AntDesign } from "@expo/vector-icons";
 
@@ -24,9 +17,8 @@ const AuthStackScreen = () => {
       <AuthStack.Screen name="Welcome" component={Welcome} />
       <AuthStack.Screen name="Login" component={Login} />
       <AuthStack.Screen name="Signup" component={Signup} />
-      {/* <AuthStack.Screen name="ForgotPassword" component={ForgotPassword} />
       <AuthStack.Screen name="OTPScreen" component={OTPScreen} />
-      <AuthStack.Screen name="ResetPassword" component={ResetPassword} /> */}
+      <AuthStack.Screen name="ChangePin" component={ChangePin} />
     </AuthStack.Navigator>
   );
 };
