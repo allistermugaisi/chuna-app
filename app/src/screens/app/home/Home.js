@@ -1,428 +1,642 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
   Image,
-  RefreshControl,
+  FlatList,
+  Animated,
+  StatusBar,
+  StyleSheet,
   Dimensions,
-  ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
-import HomeRewards from "./HomeRewards";
-import LottieView from "lottie-react-native";
-import HomeTopMovers from "./HomeTopMovers";
-import HomeWatchList from "./HomeWatchList";
-import axios from "axios";
+import {
+  Entypo,
+  Feather,
+  Ionicons,
+  AntDesign,
+  FontAwesome5,
+  MaterialIcons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ActionBottomSheet from "../../../components/ActionBottomSheet";
 
-import { COLORS, SIZES, FONTS, icons, images } from "../../../constants";
+const { width } = Dimensions.get("window");
+const GREEN = "#4CAF20";
+const GREEN_DARK = "#388E3C";
 
-const { width, height } = Dimensions.get("window");
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good Morning";
+  if (h < 17) return "Good Afternoon";
+  return "Good Evening";
+}
 
-const Home = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+// ─── Quick action button ──────────────────────────────────────────────────────
+function QuickAction({ icon, label, onPress }) {
+  const scale = useRef(new Animated.Value(1)).current;
 
-  const featuresData = [
-    {
-      id: 1,
-      icon: icons.reload,
-      color: COLORS.purple,
-      backgroundColor: COLORS.lightpurple,
-      description: "Buy",
-    },
-    // {
-    // 	id: 2,
-    // 	icon: icons.send,
-    // 	color: COLORS.yellow,
-    // 	backgroundColor: COLORS.lightyellow,
-    // 	description: 'Sell',
-    // },
-    {
-      id: 3,
-      icon: icons.internet,
-      color: COLORS.primary,
-      backgroundColor: COLORS.lightGreen,
-      description: "Pay",
-    },
-    {
-      id: 4,
-      icon: icons.wallet,
-      color: COLORS.red,
-      backgroundColor: COLORS.lightRed,
-      description: "Wallet",
-    },
-    {
-      id: 5,
-      icon: icons.bill,
-      color: COLORS.yellow,
-      backgroundColor: COLORS.lightyellow,
-      description: "Trade",
-    },
-    {
-      id: 6,
-      icon: icons.game,
-      color: COLORS.primary,
-      backgroundColor: COLORS.lightGreen,
-      description: "Safe",
-    },
-    {
-      id: 7,
-      icon: icons.phone,
-      color: COLORS.red,
-      backgroundColor: COLORS.lightRed,
-      description: "Rewards",
-    },
-    {
-      id: 8,
-      icon: icons.more,
-      color: COLORS.purple,
-      backgroundColor: COLORS.lightpurple,
-      description: "More",
-    },
-  ];
-
-  const specialPromoData = [
-    {
-      id: 1,
-      img: images.promoBanner,
-      title: "Bonus Cashback1",
-      description: "Don't miss it. Grab it now!",
-    },
-    {
-      id: 2,
-      img: images.promoBanner,
-      title: "Bonus Cashback2",
-      description: "Don't miss it. Grab it now!",
-    },
-    {
-      id: 3,
-      img: images.promoBanner,
-      title: "Bonus Cashback3",
-      description: "Don't miss it. Grab it now!",
-    },
-    {
-      id: 4,
-      img: images.promoBanner,
-      title: "Bonus Cashback4",
-      description: "Don't miss it. Grab it now!",
-    },
-  ];
-
-  const [features, setFeatures] = useState(featuresData);
-  const [specialPromos, setSpecialPromos] = useState(specialPromoData);
-
-  function renderBanner() {
-    return (
-      <View
-        style={{
-          height: 120,
-          borderRadius: 20,
-        }}
-      >
-        <Image
-          source={images.banner}
-          resizeMode="cover"
-          style={{
-            width: "100%",
-            height: "100%",
-            marginTop: 20,
-            borderRadius: 20,
-          }}
-        />
-      </View>
-    );
-  }
-
-  function renderFeatures() {
-    const Header = () => (
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "bold",
-          color: "black",
-          paddingTop: 50,
-          paddingBottom: 20,
-        }}
-      >
-        Favorites
-      </Text>
-    );
-
-    const renderItem = ({ item }) => (
-      <TouchableOpacity
-        style={{
-          marginBottom: SIZES.padding * 2,
-          width: 60,
-          alignItems: "center",
-        }}
-        onPress={() => console.log(item.description)}
-      >
-        <View
-          style={{
-            height: 50,
-            width: 50,
-            marginBottom: 5,
-            borderRadius: 20,
-            backgroundColor: item.backgroundColor,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Image
-            source={item.icon}
-            resizeMode="contain"
-            style={{
-              height: 20,
-              width: 20,
-              tintColor: item.color,
-            }}
-          />
-        </View>
-        <Text style={{ textAlign: "center", flexWrap: "wrap", ...FONTS.body4 }}>
-          {item.description}
-        </Text>
-      </TouchableOpacity>
-    );
-
-    return (
-      <FlatList
-        ListHeaderComponent={Header}
-        data={features}
-        numColumns={4}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        keyExtractor={(item) => `${item.id}`}
-        renderItem={renderItem}
-        style={{ marginTop: SIZES.padding * 2 }}
-        horizontal={false}
-      />
-    );
-  }
-
-  function renderPromos() {
-    const HeaderComponent = () => (
-      <View>
-        {renderBanner()}
-        {renderFeatures()}
-        {/* {renderPromoHeader()} */}
-      </View>
-    );
-
-    const renderPromoHeader = () => (
-      <View
-        style={{
-          flexDirection: "row",
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "bold",
-              color: "black",
-              paddingTop: 30,
-              paddingBottom: 10,
-            }}
-          >
-            Special Promo
-          </Text>
-        </View>
-        <TouchableOpacity onPress={() => console.log("View All")}>
-          <Text style={{ paddingTop: 30, color: COLORS.gray, ...FONTS.body4 }}>
-            View All
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-
-    const renderItem = ({ item }) => (
-      <TouchableOpacity
-        style={{
-          marginVertical: SIZES.base,
-          width: SIZES.width / 2.5,
-        }}
-        onPress={() => console.log(item.title)}
-      >
-        <View
-          style={{
-            height: 80,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            backgroundColor: COLORS.primary,
-          }}
-        >
-          <Image
-            source={images.promoBanner}
-            resizeMode="cover"
-            style={{
-              width: "100%",
-              height: "100%",
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-            }}
-          />
-        </View>
-
-        <View
-          style={{
-            padding: SIZES.padding,
-            backgroundColor: COLORS.lightGray,
-            borderBottomLeftRadius: 20,
-            borderBottomRightRadius: 20,
-          }}
-        >
-          <Text style={{ ...FONTS.h4 }}>{item.title}</Text>
-          <Text style={{ ...FONTS.body4 }}>{item.description}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-
-    return (
-      <FlatList
-        ListHeaderComponent={HeaderComponent}
-        contentContainerStyle={{ paddingHorizontal: SIZES.padding * 3 }}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        // data={specialPromos}
-        keyExtractor={(item) => `${item.id}`}
-        // renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-        ListFooterComponent={<View></View>}
-        horizontal={false}
-      />
-    );
-  }
-  let mounted = true;
-  useEffect(() => {
-    onLoadRefresh();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const onLoadRefresh = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `https://api.nomics.com/v1/currencies/ticker?interval=1d,30d&convert=KES&per-page=100&page=1&pref=BTC&key=b82a4ef8e5ca4114f1111e7c744b632202c31ed6`,
-      );
-      const { data } = await response;
-      if (mounted && data) {
-        setData(data);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const response = await axios.get(
-        `https://api.nomics.com/v1/currencies/ticker?interval=1d,30d&convert=KES&per-page=100&page=1&pref=BTC&key=b82a4ef8e5ca4114f1111e7c744b632202c31ed6`,
-      );
-      const { data } = await response;
-      setData(data);
-      setRefreshing(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // if (loading) {
-  // 	return (
-  // 		<LottieView
-  // 			source={require('../../../assets/loading-spinner.json')}
-  // 			autoPlay
-  // 			loop
-  // 		/>
-  // 	);
-  // }
+  const handlePress = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 0.88,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onPress?.();
+  }, [onPress]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#ff00ff"]}
-          />
-        }
-      >
-        <View>
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              paddingTop: 30,
+    <TouchableOpacity
+      onPress={handlePress}
+      activeOpacity={0.85}
+      style={styles.qaWrap}
+    >
+      <Animated.View style={[styles.qaBtn, { transform: [{ scale }] }]}>
+        <Text style={styles.qaIcon}>{icon}</Text>
+      </Animated.View>
+      <Text style={styles.qaLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Shortcut icon ────────────────────────────────────────────────────────────
+function Shortcut({ icon, label, onPress }) {
+  return (
+    <TouchableOpacity
+      style={styles.shortcutWrap}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.shortcutIcon}>
+        <Text style={{ fontSize: 30 }}>{icon}</Text>
+      </View>
+      <Text style={styles.shortcutLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Service tile ─────────────────────────────────────────────────────────────
+function ServiceTile({ label, emoji, dark, onPress }) {
+  return (
+    <TouchableOpacity
+      style={[styles.tile, dark && styles.tileDark]}
+      activeOpacity={0.82}
+      onPress={onPress}
+    >
+      <Text style={styles.tileLabel}>{label}</Text>
+      {/* <Text style={styles.tileEmoji}>{emoji}</Text> */}
+      <MaterialCommunityIcons
+        style={styles.tileEmoji}
+        name="cash-check"
+        size={30}
+        color="white"
+      />
+    </TouchableOpacity>
+  );
+}
+
+// ─── Transaction row ──────────────────────────────────────────────────────────
+function TxRow({ icon, title, subtitle, amount, status, color }) {
+  return (
+    <View style={styles.txRow}>
+      <View style={[styles.txIcon, { backgroundColor: color }]}>
+        <Text style={{ fontSize: 18 }}>{icon}</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.txTitle}>{title}</Text>
+        <Text style={styles.txSub}>{subtitle}</Text>
+      </View>
+      <View style={{ alignItems: "flex-end" }}>
+        <Text style={styles.txAmount}>{amount}</Text>
+        <Text
+          style={[
+            styles.txStatus,
+            { color: status === "Successful" ? "#2E7D32" : "#C62828" },
+          ]}
+        >
+          {status}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Static data (outside component — no re-creation on render) ───────────────
+const QUICK_ACTIONS = [
+  { icon: "↗", label: "Send to Mobile", key: "send_mobile" },
+  { icon: "⇄", label: "Money Transfer", key: "send_bank" },
+  { icon: "↑", label: "Pay", key: "pay" },
+  { icon: "↓", label: "Deposit &\nWithdraw", key: "deposit" },
+];
+
+const SHORTCUTS = [
+  {
+    icon: <Feather name="arrow-down-circle" size={30} color="black" />,
+    label: "Deposit",
+    key: "vooma",
+  },
+  {
+    icon: <MaterialIcons name="my-library-books" size={30} color="black" />,
+    label: "Loans",
+    key: "airtime",
+  },
+  {
+    icon: <Feather name="user" size={30} color="black" />,
+    label: "My Account",
+    key: "bills",
+  },
+  {
+    icon: <Entypo name="open-book" size={30} color="black" />,
+    label: "Reports",
+    key: "scan_qr",
+  },
+];
+
+const TRANSACTIONS = [
+  {
+    icon: "↗",
+    title: "Send to M-Pesa",
+    subtitle: "28 May 2026",
+    amount: "- KES 1,000.00",
+    status: "Successful",
+    color: "#FFEBEE",
+  },
+  {
+    icon: "↙",
+    title: "Received from Chuna",
+    subtitle: "27 May 2026",
+    amount: "+ KES 5,500.00",
+    status: "Successful",
+    color: "#E8F5E9",
+  },
+  {
+    icon: "↑",
+    title: "Bill Payment",
+    subtitle: "26 May 2026",
+    amount: "- KES 2,200.00",
+    status: "Successful",
+    color: "#FFF8E1",
+  },
+];
+
+// ─── Home screen ──────────────────────────────────────────────────────────────
+export default function HomeScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
+  const [balanceVisible, setBalanceVisible] = useState(true);
+
+  // ── Bottom sheet state ───────────────────────────────────────────────────
+  // Keep action in a ref so updating it doesn't re-render the FlatList
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [sheetAction, setSheetAction] = useState("send_mobile");
+
+  const openSheet = useCallback((action) => {
+    setSheetAction(action);
+    // Use a short timeout so the press animation completes before the
+    // Modal mounts — this eliminates the JS-thread spike that caused freezing
+    setTimeout(() => setSheetVisible(true), 50);
+  }, []);
+
+  const closeSheet = useCallback(() => {
+    setSheetVisible(false);
+  }, []);
+
+  // ── FlatList header (memoised so it doesn't rebuild on sheet state changes) ──
+  // We pass only balanceVisible into the header so only balance toggles cause
+  // a re-render of the header content.
+  const renderHeader = useCallback(
+    () => (
+      <>
+        {/* Balance card */}
+        <View style={styles.cardWrap}>
+          <Image
+            source={{
+              uri: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
             }}
-          >
-            <Image
-              source={require("../../../../assets/wallet.png")}
-              style={{ width: width / 2.2099, height: height / 2.9 }}
-            />
-            <Text style={{ fontSize: 20, fontWeight: "600", paddingTop: 10 }}>
-              Welcome to Chuna
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "400",
-                color: "#5d616d",
-                paddingTop: 10,
-              }}
-            >
-              Make your initial deposit today
-            </Text>
-            <View style={{ paddingTop: 30 }}>
-              <TouchableOpacity style={styles.appButtonContainer}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: "white",
-                    fontWeight: "600",
-                    alignSelf: "center",
-                  }}
-                >
-                  Load Wallet
+            style={styles.cardBg}
+          />
+          <View style={styles.cardOverlay} />
+          <View style={styles.cardContent}>
+            <Text style={styles.balanceLabel}>Balance ( 1149967128 )</Text>
+            <View style={styles.balanceRow}>
+              <Text style={styles.balanceAmount}>
+                KES {balanceVisible ? "30,768.01" : "•••••••••••"}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setBalanceVisible((v) => !v)}
+                style={{ marginLeft: 10 }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text style={{ fontSize: 20, color: "#fff" }}>
+                  {balanceVisible ? (
+                    <AntDesign name="eye" size={24} color="white" />
+                  ) : (
+                    <AntDesign name="eye-invisible" size={24} color="white" />
+                  )}
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+            <Text style={styles.loanLimit}>
+              Mobile Loan Limit: KES 44,800.00
+            </Text>
 
-          {/* <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-						{renderPromos()}
-					</SafeAreaView> */}
-
-          <View style={{ paddingTop: 50, paddingHorizontal: 10 }}>
-            <HomeWatchList />
-          </View>
-
-          <View style={{ paddingTop: 50, paddingHorizontal: 10 }}>
-            <HomeTopMovers />
-          </View>
-          <View style={{ paddingTop: 50, paddingHorizontal: 10 }}>
-            <HomeRewards />
+            <View style={styles.quickActions}>
+              {QUICK_ACTIONS.map((qa) => (
+                <QuickAction
+                  key={qa.key}
+                  icon={qa.icon}
+                  label={qa.label}
+                  onPress={() => openSheet(qa.key)}
+                />
+              ))}
+            </View>
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
 
+        {/* Promo banner */}
+        <View style={styles.promoBanner}>
+          <MaterialIcons name="campaign" size={24} color="black" />
+          <Text style={styles.promoText}>
+            Grow your future with Chuna SACCO. Save consistently, earn
+            competitive returns, and achieve your financial goals faster. Tap{" "}
+            <Text style={{ fontWeight: "700" }}>'Save'</Text> to get started.
+          </Text>
+        </View>
+
+        {/* Shortcuts */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              What would you like to do today?
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.editBtn}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.shortcutsGrid}>
+            {SHORTCUTS.map((s) => (
+              <Shortcut
+                key={s.key}
+                icon={s.icon}
+                label={s.label}
+                onPress={() => openSheet(s.key)}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Services grid */}
+        <View style={styles.servicesGrid}>
+          <View style={styles.promoTile}>
+            <Image
+              source={{
+                uri: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80",
+              }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
+            <View style={styles.promoTileOverlay} />
+            <Text style={styles.promoTileText}>
+              Save big on groceries with Chuna...
+            </Text>
+            <Text style={styles.promoTileArrow}>›</Text>
+          </View>
+
+          <View style={styles.tilesCol}>
+            <View style={styles.tilesRow}>
+              <ServiceTile
+                label="Save"
+                emoji="🪙"
+                onPress={() => openSheet("save")}
+              />
+              <ServiceTile
+                label="Loans"
+                emoji="💵"
+                onPress={() => openSheet("loans")}
+              />
+            </View>
+            <View style={styles.tilesRow}>
+              <ServiceTile
+                label="Invest"
+                emoji="🌱"
+                onPress={() => openSheet("invest")}
+              />
+              <ServiceTile
+                label="More"
+                emoji="🔄"
+                dark
+                onPress={() => openSheet("more")}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Transactions */}
+        <View style={styles.txSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Mobile Transactions</Text>
+            <TouchableOpacity>
+              <Text style={styles.editBtn}>View All</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.txCard}>
+            {TRANSACTIONS.map((tx, i) => (
+              <TxRow key={i} {...tx} />
+            ))}
+          </View>
+        </View>
+      </>
+    ),
+    [balanceVisible, openSheet],
+  );
+
+  return (
+    // React.Fragment keeps the Modal outside every View that has
+    // PanResponder or touch handlers — prevents gesture conflicts
+    <>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F4F6F8" />
+
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <View style={styles.topBarLeft}>
+            <View style={styles.avatarPlaceholder}>
+              <FontAwesome5 name="user-circle" size={24} color="#555" />
+            </View>
+            <View>
+              <Text style={styles.greetingText}>{getGreeting()}</Text>
+              <Text style={styles.greetingName}>ALLISTER</Text>
+            </View>
+          </View>
+
+          <View style={styles.topBarRight}>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={() => navigation.navigate("Notifications")}
+            >
+              <Ionicons name="notifications-outline" size={24} color="black" />
+              <View style={styles.notifDot} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Scrollable content */}
+        <FlatList
+          data={[]} // empty — all content is in the header
+          keyExtractor={() => ""}
+          renderItem={null}
+          ListHeaderComponent={renderHeader}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 110 }}
+          // These two props stop FlatList swallowing the Modal's backdrop tap
+          keyboardShouldPersistTaps="handled"
+          removeClippedSubviews={false}
+        />
+      </View>
+
+      {/*
+        ↑ Sheet lives OUTSIDE the FlatList's View entirely.
+        This is the key fix — no shared responder tree with the list.
+      */}
+      <ActionBottomSheet
+        visible={sheetVisible}
+        action={sheetAction}
+        onClose={closeSheet}
+      />
+    </>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  appButtonContainer: {
-    backgroundColor: "#00ab55",
-    borderRadius: 50,
-    paddingVertical: 17,
-    paddingHorizontal: 100,
+  container: { flex: 1, backgroundColor: "#F4F6F8" },
+
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#F4F6F8",
   },
+  topBarLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  avatarPlaceholder: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#E0E0E0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  greetingText: { fontSize: 12, color: "#777" },
+  greetingName: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    letterSpacing: 0.5,
+  },
+  topBarRight: { flexDirection: "row", gap: 4 },
+  iconBtn: { padding: 6 },
+  notifDot: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#E53935",
+    borderWidth: 1.5,
+    borderColor: "#F4F6F8",
+  },
+
+  // Balance card
+  cardWrap: {
+    marginHorizontal: 16,
+    borderRadius: 18,
+    overflow: "hidden",
+    height: 240,
+    marginBottom: 14,
+  },
+  cardBg: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
+  cardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.38)",
+  },
+  cardContent: { flex: 1, padding: 18, justifyContent: "space-between" },
+  balanceLabel: { color: "rgba(255,255,255,0.82)", fontSize: 13 },
+  balanceRow: { flexDirection: "row", alignItems: "center" },
+  balanceAmount: { fontSize: 20, fontWeight: "800", color: "#fff" },
+  loanLimit: { color: "rgba(255,255,255,0.78)", fontSize: 13 },
+  quickActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  qaWrap: { alignItems: "center", flex: 1 },
+  qaBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  qaIcon: { fontSize: 22, color: "#fff", fontWeight: "700" },
+  qaLabel: {
+    color: "#fff",
+    fontSize: 11,
+    textAlign: "center",
+    fontWeight: "500",
+    lineHeight: 14,
+  },
+
+  // Promo
+  promoBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+    marginBottom: 14,
+    borderLeftWidth: 4,
+    borderLeftColor: "#2196F3",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+  },
+  promoText: { flex: 1, fontSize: 13, color: "#444", lineHeight: 19 },
+
+  // Section
+  section: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 14,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#1A1A1A" },
+  editBtn: { color: GREEN, fontWeight: "700", fontSize: 14 },
+
+  shortcutsGrid: { flexDirection: "row", justifyContent: "space-between" },
+  shortcutWrap: { alignItems: "center", flex: 1 },
+  shortcutIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 14,
+    backgroundColor: "#F0F4FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  shortcutLabel: {
+    fontSize: 11,
+    color: "#333",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+
+  // Services
+  servicesGrid: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    gap: 10,
+    marginBottom: 14,
+    height: 200,
+  },
+  promoTile: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: "hidden",
+    justifyContent: "flex-end",
+    padding: 12,
+  },
+  promoTileOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.42)",
+  },
+  promoTileText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+    zIndex: 1,
+    lineHeight: 18,
+  },
+  promoTileArrow: { color: "#fff", fontSize: 22, zIndex: 1, marginTop: 4 },
+  tilesCol: { flex: 1, gap: 10 },
+  tilesRow: { flex: 1, flexDirection: "row", gap: 10 },
+  tile: {
+    flex: 1,
+    backgroundColor: GREEN,
+    borderRadius: 14,
+    padding: 12,
+    justifyContent: "space-between",
+  },
+  tileDark: { backgroundColor: GREEN_DARK },
+  tileLabel: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  tileEmoji: { fontSize: 26, alignSelf: "flex-end" },
+
+  // Transactions
+  txSection: { marginHorizontal: 16 },
+  txCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    overflow: "hidden",
+    marginTop: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+  },
+  txRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#F0F0F0",
+  },
+  txIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  txTitle: { fontSize: 14, fontWeight: "600", color: "#1A1A1A" },
+  txSub: { fontSize: 12, color: "#999", marginTop: 2 },
+  txAmount: { fontSize: 14, fontWeight: "700", color: "#1A1A1A" },
+  txStatus: { fontSize: 12, fontWeight: "500", marginTop: 2 },
 });
-export default Home;
