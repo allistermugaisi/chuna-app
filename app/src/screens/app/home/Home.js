@@ -15,7 +15,9 @@ import {
   Feather,
   Ionicons,
   AntDesign,
+  FontAwesome,
   FontAwesome5,
+  FontAwesome6,
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
@@ -85,7 +87,7 @@ function Shortcut({ icon, label, onPress }) {
 }
 
 // ─── Service tile ─────────────────────────────────────────────────────────────
-function ServiceTile({ label, emoji, dark, onPress }) {
+function ServiceTile({ label, icon, emoji, dark, onPress }) {
   return (
     <TouchableOpacity
       style={[styles.tile, dark && styles.tileDark]}
@@ -93,13 +95,17 @@ function ServiceTile({ label, emoji, dark, onPress }) {
       onPress={onPress}
     >
       <Text style={styles.tileLabel}>{label}</Text>
-      {/* <Text style={styles.tileEmoji}>{emoji}</Text> */}
-      <MaterialCommunityIcons
-        style={styles.tileEmoji}
-        name="cash-check"
-        size={30}
-        color="white"
-      />
+
+      {icon ? (
+        <MaterialCommunityIcons
+          name={icon}
+          size={24}
+          color="#fff"
+          style={styles.tileIcon}
+        />
+      ) : (
+        <Text style={styles.tileEmoji}>{emoji}</Text>
+      )}
     </TouchableOpacity>
   );
 }
@@ -132,23 +138,29 @@ function TxRow({ icon, title, subtitle, amount, status, color }) {
 
 // ─── Static data (outside component — no re-creation on render) ───────────────
 const QUICK_ACTIONS = [
-  { icon: "↗", label: "Send to Mobile", key: "send_mobile" },
-  { icon: "⇄", label: "Money Transfer", key: "send_bank" },
-  { icon: "↑", label: "Pay", key: "pay" },
-  { icon: "↓", label: "Deposit &\nWithdraw", key: "deposit" },
+  {
+    icon: <FontAwesome name="send-o" size={24} color="white" />,
+    label: "Withdraw",
+    key: "send_mobile",
+  },
+  {
+    icon: <Entypo name="arrow-down" size={24} color="white" />,
+    label: "Deposit",
+    key: "deposit",
+  },
+  {
+    icon: <FontAwesome6 name="money-bill-transfer" size={24} color="white" />,
+    label: "Money Transfer",
+    key: "send_bank",
+  },
+  {
+    icon: <FontAwesome6 name="money-bill-1-wave" size={24} color="white" />,
+    label: "Standing Order",
+    key: "standing_order",
+  },
 ];
 
 const SHORTCUTS = [
-  {
-    icon: <Feather name="arrow-down-circle" size={30} color="black" />,
-    label: "Deposit",
-    key: "vooma",
-  },
-  {
-    icon: <MaterialIcons name="my-library-books" size={30} color="black" />,
-    label: "Loans",
-    key: "airtime",
-  },
   {
     icon: <Feather name="user" size={30} color="black" />,
     label: "My Account",
@@ -158,6 +170,11 @@ const SHORTCUTS = [
     icon: <Entypo name="open-book" size={30} color="black" />,
     label: "Reports",
     key: "scan_qr",
+  },
+  {
+    icon: <MaterialIcons name="my-library-books" size={30} color="black" />,
+    label: "Next of Kin",
+    key: "next_of_kin",
   },
 ];
 
@@ -265,9 +282,8 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.promoBanner}>
           <MaterialIcons name="campaign" size={24} color="black" />
           <Text style={styles.promoText}>
-            Grow your future with Chuna SACCO. Save consistently, earn
-            competitive returns, and achieve your financial goals faster. Tap{" "}
-            <Text style={{ fontWeight: "700" }}>'Save'</Text> to get started.
+            From savings to loans, insurance to digital banking, we provide the
+            tools you need to thrive financially across Kenya.
           </Text>
         </View>
 
@@ -299,42 +315,33 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.promoTile}>
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80",
+                uri: "https://res.cloudinary.com/dqnkqwhqh/image/upload/v1772783049/slider/dcuxfos8xec5qokkw5xs.jpg",
               }}
               style={StyleSheet.absoluteFill}
               resizeMode="cover"
             />
             <View style={styles.promoTileOverlay} />
-            <Text style={styles.promoTileText}>
-              Save big on groceries with Chuna...
-            </Text>
-            <Text style={styles.promoTileArrow}>›</Text>
+            <Text style={styles.promoTileText}>Chuna Sacco Society LTD</Text>
           </View>
 
           <View style={styles.tilesCol}>
             <View style={styles.tilesRow}>
               <ServiceTile
-                label="Save"
-                emoji="🪙"
-                onPress={() => openSheet("save")}
+                label="Loans"
+                icon="cash-check"
+                onPress={() => openSheet("loans")}
               />
               <ServiceTile
-                label="Loans"
-                emoji="💵"
-                onPress={() => openSheet("loans")}
+                label="C-Zawadi"
+                icon="gift"
+                onPress={() => openSheet("save")}
               />
             </View>
             <View style={styles.tilesRow}>
               <ServiceTile
-                label="Invest"
-                emoji="🌱"
+                label="Marketplace"
+                icon="shopping"
                 onPress={() => openSheet("invest")}
-              />
-              <ServiceTile
-                label="More"
-                emoji="🔄"
-                dark
-                onPress={() => openSheet("more")}
               />
             </View>
           </View>
@@ -343,7 +350,7 @@ export default function HomeScreen({ navigation }) {
         {/* Transactions */}
         <View style={styles.txSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Mobile Transactions</Text>
+            <Text style={styles.sectionTitle}>Mini Statement</Text>
             <TouchableOpacity>
               <Text style={styles.editBtn}>View All</Text>
             </TouchableOpacity>
@@ -365,7 +372,7 @@ export default function HomeScreen({ navigation }) {
     // PanResponder or touch handlers — prevents gesture conflicts
     <>
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F4F6F8" />
+        <StatusBar barStyle="dark-content" backgroundColor="default" />
 
         {/* Top bar */}
         <View style={styles.topBar}>
@@ -604,11 +611,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   tileDark: { backgroundColor: GREEN_DARK },
-  tileLabel: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  tileLabel: { color: "#fff", fontWeight: "700", fontSize: 12 },
   tileEmoji: { fontSize: 26, alignSelf: "flex-end" },
 
   // Transactions
-  txSection: { marginHorizontal: 16 },
+  txSection: { marginTop: 16, marginHorizontal: 16 },
   txCard: {
     backgroundColor: "#fff",
     borderRadius: 14,

@@ -12,7 +12,13 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import {
+  Entypo,
+  Feather,
+  AntDesign,
+  FontAwesome,
+  FontAwesome6,
+} from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height: SCREEN_H } = Dimensions.get("window");
@@ -338,80 +344,61 @@ const SHEET_CONFIGS = {
     title: "Send to Mobile",
     items: [
       {
-        icon: "📲",
+        icon: <Entypo name="arrow-bold-right" size={24} color="black" />,
         title: "Send to Mobile",
         subtitle: "Send money to Airtel Money, T-Kash & M-Pesa",
         badge: null,
       },
+    ],
+  },
+  send_bank: {
+    title: "Money Transfer",
+    items: [
       {
-        icon: "♾️",
-        title: "Vooma",
-        subtitle: "Send money to a VOOMA account",
+        icon: <FontAwesome name="bank" size={24} color="black" />,
+        title: "My Account",
+        subtitle: "Move funds between your Chuna accounts",
+        badge: null,
+      },
+      {
+        icon: <FontAwesome name="send-o" size={24} color="black" />,
+        title: "Other Accounts",
+        subtitle: "Send funds to another Chuna member",
+        badge: null,
+      },
+      // {
+      //   icon: "🌍",
+      //   title: "International Transfer",
+      //   subtitle: "Send money abroad via SWIFT",
+      //   badge: null,
+      // },
+    ],
+  },
+  deposit: {
+    title: "Deposit to Chuna",
+    items: [
+      {
+        icon: <FontAwesome6 name="money-bills" size={24} color="black" />,
+        title: "Deposit via Mobile Money",
+        subtitle: "Fund your account securely via mobile money",
         badge: "Free Transfer",
         badgeColor: "#29B6D1",
       },
     ],
   },
-  send_bank: {
-    title: "Send to Bank",
+  standing_order: {
+    title: "Standing Orders",
     items: [
       {
-        icon: "🏦",
-        title: "Send to KCB Account",
-        subtitle: "Transfer within KCB instantly",
+        icon: <Entypo name="arrow-down" size={24} color="black" />,
+        title: "Internal Standing Order",
+        subtitle: "Set up recurring transfers to your own accounts",
         badge: null,
       },
       {
-        icon: "🔀",
-        title: "Send to Other Bank",
-        subtitle: "Transfer via RTGS or EFT",
-        badge: null,
-      },
-      {
-        icon: "🌍",
-        title: "International Transfer",
-        subtitle: "Send money abroad via SWIFT",
-        badge: null,
-      },
-    ],
-  },
-  pay: {
-    title: "Pay",
-    items: [
-      {
-        icon: "🧾",
-        title: "Pay Bill",
-        subtitle: "KPLC, Nairobi Water, DSTV & more",
-        badge: null,
-      },
-      {
-        icon: "🛒",
-        title: "Pay to Merchant",
-        subtitle: "Pay at any partnered merchant",
-        badge: null,
-      },
-      {
-        icon: "⬛",
-        title: "Scan & Pay (QR)",
-        subtitle: "Scan a QR code to pay instantly",
-        badge: "Fast",
-        badgeColor: GREEN,
-      },
-    ],
-  },
-  deposit: {
-    title: "Deposit & Withdraw",
-    items: [
-      {
-        icon: "⬇️",
-        title: "Deposit Cash",
-        subtitle: "Deposit at any agent or branch",
-        badge: null,
-      },
-      {
-        icon: "⬆️",
-        title: "Withdraw Cash",
-        subtitle: "Withdraw at ATM or agent",
+        icon: <Entypo name="arrow-up" size={24} color="black" />,
+        title: "External Standing Order",
+        subtitle: "Set up recurring transfers to other accounts",
         badge: null,
       },
     ],
@@ -421,22 +408,10 @@ const SHEET_CONFIGS = {
     items: [
       {
         icon: "🏦",
-        title: "Fixed Deposit",
+        title: "C-Zawadi Account",
         subtitle: "Lock savings at higher rates",
-        badge: "Up to 12% p.a.",
+        badge: "zawadi points",
         badgeColor: GREEN,
-      },
-      {
-        icon: "🪙",
-        title: "Goal Savings",
-        subtitle: "Save towards a specific goal",
-        badge: null,
-      },
-      {
-        icon: "📅",
-        title: "Chama / Group Saving",
-        subtitle: "Save together as a group",
-        badge: null,
       },
     ],
   },
@@ -445,38 +420,44 @@ const SHEET_CONFIGS = {
     items: [
       {
         icon: "⚡",
-        title: "Mobile Loan",
-        subtitle: "Instant loan disbursed to M-Pesa",
+        title: "Pending Approval Loans",
+        subtitle: "Get quick access to loans awaiting approval",
         badge: "Instant",
         badgeColor: "#F57C00",
       },
       {
         icon: "🏠",
-        title: "Mortgage",
-        subtitle: "Finance your dream home",
+        title: "Running Loans",
+        subtitle: "View and manage your active loans",
         badge: null,
       },
       {
         icon: "🚗",
-        title: "Asset Finance",
-        subtitle: "Finance vehicles and equipment",
+        title: "Apply Loans",
+        subtitle: "Explore and apply for new loan products",
         badge: null,
       },
     ],
   },
   invest: {
-    title: "Invest",
+    title: "Marketplace",
     items: [
       {
+        icon: "🏛️",
+        title: "Create Bid",
+        subtitle: "Create a bid to sell ",
+        badge: null,
+      },
+      {
         icon: "📈",
-        title: "Unit Trust Funds",
-        subtitle: "Invest in money market & equity funds",
+        title: "Market",
+        subtitle: "Browse available bids to invest in",
         badge: null,
       },
       {
         icon: "🏛️",
-        title: "Government Bonds",
-        subtitle: "Buy treasury bills and bonds",
+        title: "My Shares",
+        subtitle: "View your investment portfolio and returns",
         badge: null,
       },
     ],
@@ -516,6 +497,17 @@ const SHEET_CONFIGS = {
       },
     ],
   },
+  next_of_kin: {
+    title: "Next of Kin",
+    items: [
+      {
+        icon: "👨‍👩‍👧",
+        title: "View Next of Kin",
+        subtitle: "See your registered next of kin details",
+        badge: null,
+      },
+    ],
+  },
   airtime: {
     title: "Buy Airtime",
     items: [
@@ -534,24 +526,12 @@ const SHEET_CONFIGS = {
     ],
   },
   bills: {
-    title: "My Bills",
+    title: "My Account",
     items: [
       {
-        icon: "⚡",
-        title: "Electricity (KPLC)",
-        subtitle: "Pay your electricity bill",
-        badge: null,
-      },
-      {
-        icon: "💧",
-        title: "Water",
-        subtitle: "Nairobi Water & other counties",
-        badge: null,
-      },
-      {
-        icon: "📡",
-        title: "TV / Internet",
-        subtitle: "DSTV, Zuku, Safaricom Home",
+        icon: <Feather name="user" size={24} color="black" />,
+        title: "Profile",
+        subtitle: "Manage your account details and settings",
         badge: null,
       },
     ],
