@@ -18,6 +18,7 @@ import {
   AntDesign,
   FontAwesome,
   FontAwesome6,
+  MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -376,12 +377,6 @@ const SHEET_CONFIGS = {
         badge: null,
         navigation: "",
       },
-      // {
-      //   icon: "🌍",
-      //   title: "International Transfer",
-      //   subtitle: "Send money abroad via SWIFT",
-      //   badge: null,
-      // },
     ],
   },
   deposit: {
@@ -521,16 +516,16 @@ const SHEET_CONFIGS = {
       },
     ],
   },
-  next_of_kin: {
-    title: "Next of Kin",
+  account_balance: {
+    title: "Account Balance",
     items: [
-      {
-        icon: "👨‍👩‍👧",
-        title: "View Next of Kin",
-        subtitle: "See your registered next of kin details",
-        badge: null,
-        navigation: "",
-      },
+      // {
+      //   icon: "👨‍👩‍👧",
+      //   title: "View Next of Kin",
+      //   subtitle: "See your registered next of kin details",
+      //   badge: null,
+      //   navigation: "",
+      // },
     ],
   },
   airtime: {
@@ -552,7 +547,7 @@ const SHEET_CONFIGS = {
       },
     ],
   },
-  bills: {
+  my_account: {
     title: "My Account",
     items: [
       {
@@ -564,21 +559,55 @@ const SHEET_CONFIGS = {
       },
     ],
   },
-  scan_qr: {
-    title: "Scan QR",
+  reports: {
+    title: "Reports",
     items: [
       {
-        icon: "📷",
-        title: "Scan to Pay",
-        subtitle: "Scan a merchant QR code to pay",
-        badge: null,
+        icon: (
+          <MaterialCommunityIcons
+            name="receipt-text-outline"
+            size={24}
+            color="black"
+          />
+        ),
+        title: "Mini Statement",
+        subtitle: "See your latest account activity at a glance",
         navigation: "",
       },
       {
-        icon: "⬛",
-        title: "My QR Code",
-        subtitle: "Show your QR code to receive money",
-        badge: null,
+        icon: (
+          <MaterialCommunityIcons
+            name="file-document-multiple-outline"
+            size={24}
+            color="black"
+          />
+        ),
+        title: "Full Statement",
+        subtitle: "Download or review your complete financial history",
+        navigation: "",
+      },
+      {
+        icon: (
+          <MaterialCommunityIcons
+            name="bank-transfer"
+            size={24}
+            color="black"
+          />
+        ),
+        title: "Loan Statement",
+        subtitle: "Monitor loan disbursements, repayments, and balances",
+        navigation: "",
+      },
+      {
+        icon: (
+          <MaterialCommunityIcons
+            name="calendar-check-outline"
+            size={24}
+            color="black"
+          />
+        ),
+        title: "Repayment Schedule",
+        subtitle: "Stay on track with your upcoming loan payments",
         navigation: "",
       },
     ],

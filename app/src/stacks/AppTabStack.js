@@ -32,7 +32,8 @@ const getTabBarVisibility = (route) => {
     "SellerDashboard",
     "DepositScreen",
     "WithdrawScreen",
-    "StatementScreen",
+    "MiniStatement",
+    "FullStatement",
   ]; // Screens where the tab bar should be hidden
   const routeName = getFocusedRouteNameFromRoute(route) ?? "Home";
 

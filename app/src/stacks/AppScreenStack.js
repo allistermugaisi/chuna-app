@@ -28,7 +28,8 @@ import {
   DepositScreen,
   WithdrawScreen,
   SellerDashboard,
-  StatementScreen,
+  FullStatement,
+  AllMiniStatement,
 } from "../screens/app";
 
 import { Notifications } from "../global";
@@ -78,10 +79,17 @@ export const HomeStackScreen = ({ navigation }) => {
         }}
       />
       <HomeStack.Screen
-        name="StatementScreen"
-        component={StatementScreen}
+        name="MiniStatement"
+        component={AllMiniStatement}
         options={{
-          title: "Statement",
+          title: "Mini Statement",
+        }}
+      />
+      <HomeStack.Screen
+        name="FullStatement"
+        component={FullStatement}
+        options={{
+          title: "Full Statement",
         }}
       />
       <HomeStack.Screen name="MyBids" component={MyBidsScreen} />

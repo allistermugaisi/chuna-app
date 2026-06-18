@@ -10,13 +10,16 @@ import {
   Dimensions,
   Linking,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
+import { auth } from "../../../store/slices/authSlice";
+
 const { width } = Dimensions.get("window");
 
-// ─── Sample user data — replace with real data from your API/state ───────────
+// ─── Sample user data — replace with real data from your API/state ───
 const USER = {
   fullName: "Allister Mugaisi Atsenga",
   initials: "AA",
@@ -35,7 +38,7 @@ const SUPPORT = {
   phones: ["+254 705 951 672"],
 };
 
-// ─── Individual row item ──────────────────────────────────────────────────────
+// ─── Individual row item ───
 function InfoRow({ label, value, isLast }) {
   const isEmpty = !value;
   return (
@@ -54,7 +57,11 @@ function InfoRow({ label, value, isLast }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProfileScreen({ navigation }) {
+  const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
+
+  const { user } = useSelector((state) => state.auth);
+  // console.log("Current User", user);
 
   // Subtle fade-up animation on mount
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -76,14 +83,15 @@ export default function ProfileScreen({ navigation }) {
     ]).start();
   }, []);
 
+  useEffect(() => {
+    dispatch(auth()).unwrap();
+  }, []);
+
   const fields = [
-    { label: "Email Address", value: USER.email },
-    { label: "Phone Number", value: USER.phone },
-    { label: "Physical Address", value: USER.physicalAddress },
-    { label: "Postal Address", value: USER.postalAddress },
-    { label: "KRA Pin", value: USER.kraPin },
-    { label: "National ID No.", value: USER.nationalId },
-    { label: "Occupation", value: USER.occupation },
+    { label: "Member Number", value: user?.member_no },
+    { label: "Full Name", value: user?.name },
+    { label: "Phone Number", value: user?.mobile_no },
+    { label: "Status", value: user?.status },
   ];
 
   return (
@@ -94,7 +102,7 @@ export default function ProfileScreen({ navigation }) {
         backgroundColor="transparent"
       />
 
-      {/* ── Header gradient ───────────────────────────────────────────────── */}
+      {/* ── Header gradient ── */}
       <LinearGradient
         colors={["#00703C", "#2E8B57"]}
         start={{ x: 0.1, y: 0 }}
@@ -121,11 +129,11 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         {/* Name + last seen */}
-        <Text style={styles.name}>{USER.fullName}</Text>
+        <Text style={styles.name}>{user?.name}</Text>
         <Text style={styles.lastSeen}>{USER.lastSeen}</Text>
       </LinearGradient>
 
-      {/* ── Scrollable body ───────────────────────────────────────────────── */}
+      {/* ── Scrollable body ── */}
       <Animated.View
         style={[
           styles.body,
@@ -178,7 +186,7 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ───
 const styles = StyleSheet.create({
   container: {
     flex: 1,

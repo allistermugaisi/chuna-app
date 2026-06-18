@@ -26,6 +26,7 @@ import {
   clearDepositError,
 } from "../../../store/slices/depositSlice";
 import { fetchWithdrawableAccounts } from "../../../store/slices/withdrawSlice";
+import { PhoneInput } from "../../../components/PhoneInput";
 
 const GREEN = "#4CAF20";
 const GREEN_LIGHT = "#E8F5E9";
@@ -338,6 +339,9 @@ export default function DepositScreen({ navigation, route }) {
   const memberPhone = accounts?.mobile_no ?? seedMobileNo;
   const memberNo = accounts?.member_no ?? route?.params?.member_no ?? "";
 
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState(null);
+
   const {
     control,
     handleSubmit,
@@ -358,6 +362,12 @@ export default function DepositScreen({ navigation, route }) {
     );
   }, []);
 
+  useEffect(() => {
+    if (memberPhone) {
+      setPhone(memberPhone?.replace(/^\+254/, ""));
+    }
+  }, [memberPhone]);
+
   // Auto-select if only one account
   useEffect(() => {
     const balances = accounts?.account_balances ?? [];
@@ -376,7 +386,7 @@ export default function DepositScreen({ navigation, route }) {
       const doc_no = `DEP-${Date.now().toString().slice(-8)}`;
       await dispatch(
         initiateDeposit({
-          phone: memberPhone,
+          phone: memberPhone || phone,
           amount: Number(data.amount),
           account_no: selectedAccount.account_no,
           member_no: memberNo,
@@ -386,7 +396,7 @@ export default function DepositScreen({ navigation, route }) {
         .unwrap()
         .catch(() => {});
     },
-    [dispatch, memberPhone, memberNo, selectedAccount],
+    [dispatch, memberPhone, phone, memberNo, selectedAccount],
   );
 
   const handleDone = useCallback(() => {
@@ -447,7 +457,11 @@ export default function DepositScreen({ navigation, route }) {
             </Text>
           </View>
           <TouchableOpacity style={s.primaryBtn} onPress={handleDone}>
-            <Text style={s.primaryBtnTxt}>Done</Text>
+            <Text
+              style={[s.primaryBtnTxt, { width: "100%", textAlign: "center" }]}
+            >
+              Done
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -504,6 +518,14 @@ export default function DepositScreen({ navigation, route }) {
               <Ionicons name="chevron-forward" size={16} color={TEXT_FAINT} />
             )}
           </TouchableOpacity>
+
+          <View style={{ marginBottom: 10 }}>
+            <PhoneInput
+              value={phone}
+              onChangeText={setPhone}
+              onCountryChange={(c) => setCountry(c)}
+            />
+          </View>
 
           {/* Amount */}
           <Text style={s.fieldLabel}>
@@ -616,11 +638,11 @@ export default function DepositScreen({ navigation, route }) {
               </>
             ) : (
               <>
-                <MaterialCommunityIcons
+                {/* <MaterialCommunityIcons
                   name="cellphone-arrow-down"
                   size={20}
                   color="#fff"
-                />
+                /> */}
                 <Text style={s.primaryBtnTxt}>Deposit</Text>
               </>
             )}
@@ -772,7 +794,7 @@ const s = StyleSheet.create({
     backgroundColor: GREEN,
     borderRadius: 14,
     paddingVertical: 16,
-    marginBottom: 16,
+    marginVertical: 16,
   },
   primaryBtnDisabled: { opacity: 0.45 },
   primaryBtnTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },

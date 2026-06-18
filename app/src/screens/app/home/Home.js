@@ -21,10 +21,14 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import { useSelector } from "react-redux";
 import { getValueFor } from "../../../utils/secureStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ActionBottomSheet from "../../../components/ActionBottomSheet";
 import { Toast } from "../../../components/Toast";
+
+import BalanceCard from "../../../components/BalanceCard";
+import MiniStatement from "../../../components/MiniStatement";
 
 const { width } = Dimensions.get("window");
 const GREEN = "#4CAF20";
@@ -164,19 +168,19 @@ const QUICK_ACTIONS = [
 
 const SHORTCUTS = [
   {
-    icon: <Feather name="user" size={30} color="black" />,
-    label: "My Account",
-    key: "bills",
+    icon: <MaterialIcons name="my-library-books" size={30} color="black" />,
+    label: "Account Balances",
+    key: "account_balance",
   },
   {
     icon: <Entypo name="open-book" size={30} color="black" />,
     label: "Reports",
-    key: "scan_qr",
+    key: "reports",
   },
   {
-    icon: <MaterialIcons name="my-library-books" size={30} color="black" />,
-    label: "Next of Kin",
-    key: "next_of_kin",
+    icon: <Feather name="user" size={30} color="black" />,
+    label: "My Account",
+    key: "my_account",
   },
 ];
 
@@ -217,6 +221,9 @@ export default function HomeScreen({ navigation }) {
   const [sheetVisible, setSheetVisible] = useState(false);
   const [sheetAction, setSheetAction] = useState("send_mobile");
 
+  const { user } = useSelector((state) => state.auth);
+  // console.log("Current User", user?.name);
+
   useEffect(() => {
     (async () => {
       const data = await getValueFor("user");
@@ -251,50 +258,7 @@ export default function HomeScreen({ navigation }) {
     () => (
       <>
         {/* Balance card */}
-        <View style={styles.cardWrap}>
-          <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
-            }}
-            style={styles.cardBg}
-          />
-          <View style={styles.cardOverlay} />
-          <View style={styles.cardContent}>
-            <Text style={styles.balanceLabel}>Balance ( 1149967128 )</Text>
-            <View style={styles.balanceRow}>
-              <Text style={styles.balanceAmount}>
-                KES {balanceVisible ? "30,768.01" : "•••••••••••"}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setBalanceVisible((v) => !v)}
-                style={{ marginLeft: 10 }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Text style={{ fontSize: 20, color: "#fff" }}>
-                  {balanceVisible ? (
-                    <AntDesign name="eye" size={24} color="white" />
-                  ) : (
-                    <AntDesign name="eye-invisible" size={24} color="white" />
-                  )}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.loanLimit}>
-              Mobile Loan Limit: KES 44,800.00
-            </Text>
-
-            <View style={styles.quickActions}>
-              {QUICK_ACTIONS.map((qa) => (
-                <QuickAction
-                  key={qa.key}
-                  icon={qa.icon}
-                  label={qa.label}
-                  onPress={() => openSheet(qa.key)}
-                />
-              ))}
-            </View>
-          </View>
-        </View>
+        <BalanceCard quickActions={QUICK_ACTIONS} onAction={openSheet} />
 
         {/* Promo banner */}
         <View style={styles.promoBanner}>
@@ -311,9 +275,9 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.sectionTitle}>
               What would you like to do today?
             </Text>
-            <TouchableOpacity>
+            {/* <TouchableOpacity>
               <Text style={styles.editBtn}>Edit</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <View style={styles.shortcutsGrid}>
@@ -322,7 +286,16 @@ export default function HomeScreen({ navigation }) {
                 key={s.key}
                 icon={s.icon}
                 label={s.label}
-                onPress={() => openSheet(s.key)}
+                // onPress={() => openSheet(s.key)}
+                onPress={() => {
+                  if (s.key === "my_account") {
+                    navigation.navigate("Profile", {
+                      screen: "ProfileScreen",
+                    });
+                  } else {
+                    openSheet(s.key);
+                  }
+                }}
               />
             ))}
           </View>
@@ -366,7 +339,8 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {/* Transactions */}
-        <View style={styles.txSection}>
+        <MiniStatement navigation={navigation} limit={5} header={true} />
+        {/* <View style={styles.txSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Mini Statement</Text>
             <TouchableOpacity>
@@ -379,7 +353,7 @@ export default function HomeScreen({ navigation }) {
               <TxRow key={i} {...tx} />
             ))}
           </View>
-        </View>
+        </View> */}
       </>
     ),
     [balanceVisible, openSheet],
@@ -400,7 +374,7 @@ export default function HomeScreen({ navigation }) {
             </View>
             <View>
               <Text style={styles.greetingText}>{getGreeting()}</Text>
-              <Text style={styles.greetingName}>ALLISTER</Text>
+              <Text style={styles.greetingName}>{user?.name}</Text>
             </View>
           </View>
 

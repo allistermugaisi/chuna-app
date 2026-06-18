@@ -10,4 +10,5 @@ export { default as CreateListing } from "./home/CreateListing";
 export { default as SellerDashboard } from "./home/SellerDashboard";
 export { default as DepositScreen } from "./home/DepositScreen";
 export { default as WithdrawScreen } from "./home/WithdrawScreen";
-export { default as StatementScreen } from "./home/StatementScreen";
+export { default as FullStatement } from "./home/FullStatement";
+export { default as AllMiniStatement } from "./home/AllMiniStatement";
