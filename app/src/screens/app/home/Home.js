@@ -21,11 +21,12 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getValueFor } from "../../../utils/secureStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ActionBottomSheet from "../../../components/ActionBottomSheet";
 import { Toast } from "../../../components/Toast";
+import { auth } from "../../../store/slices/authSlice";
 
 import BalanceCard from "../../../components/BalanceCard";
 import MiniStatement from "../../../components/MiniStatement";
@@ -213,7 +214,9 @@ const TRANSACTIONS = [
 
 // ─── Home screen ───
 export default function HomeScreen({ navigation }) {
+  const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
+
   const [balanceVisible, setBalanceVisible] = useState(true);
 
   // ── Bottom sheet state ───
@@ -238,6 +241,10 @@ export default function HomeScreen({ navigation }) {
         });
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    dispatch(auth()).unwrap();
   }, []);
 
   const openSheet = useCallback((action) => {
@@ -340,20 +347,6 @@ export default function HomeScreen({ navigation }) {
 
         {/* Transactions */}
         <MiniStatement navigation={navigation} limit={5} header={true} />
-        {/* <View style={styles.txSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Mini Statement</Text>
-            <TouchableOpacity>
-              <Text style={styles.editBtn}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.txCard}>
-            {TRANSACTIONS.map((tx, i) => (
-              <TxRow key={i} {...tx} />
-            ))}
-          </View>
-        </View> */}
       </>
     ),
     [balanceVisible, openSheet],
