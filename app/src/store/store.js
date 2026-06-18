@@ -1,15 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authSlice from "./slices/authSlice";
-// import packageSlice from "./slices/packageSlice";
-// import juniorSlice from "./slices/juniorSlice";
-// import counterReducer from "./slices/counterSlice";
+import marketSlice from "./slices/marketSlice";
+import withdrawSlice from "./slices/withdrawSlice";
+import depositSlice from "./slices/depositSlice";
 // import serviceSlice from "./slices/serviceSlice";
 
 const Store = configureStore({
   reducer: {
     auth: authSlice,
-    // package: packageSlice,
-    // junior: juniorSlice,
+    market: marketSlice,
+    withdraw: withdrawSlice,
+    deposit: depositSlice,
     // service: serviceSlice,
     // counter: counterReducer,
   },

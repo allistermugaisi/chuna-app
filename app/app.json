@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -31,11 +31,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-font",
-      "expo-secure-store",
-      "expo-web-browser"
-    ],
+    "plugins": ["expo-font", "expo-secure-store", "expo-web-browser"],
     "extra": {
       "eas": {
         "projectId": "2641ec16-d557-408a-81ad-9d78879f6562"

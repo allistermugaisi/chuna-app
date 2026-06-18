@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   View,
   Text,
-  StyleSheet,
   Platform,
-  ActivityIndicator,
-  SafeAreaView,
   StatusBar,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
-// import OTPInputView from "@twotalltotems/react-native-otp-input";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, HelperText, useTheme } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as Device from "expo-device";
+import * as Application from "expo-application";
 import Toast from "react-native-toast-message";
 
 import { getValueFor } from "../../utils/secureStore";
-// import { otpSuccess, sendPhoneOTP } from '../../store/actions/authActions';
+import { verifyOTP, resendPhoneOTP } from "../../store/slices/authSlice";
 import { StyledButton, ButtonText } from "../../components/styles";
 
-const OTPScreen = ({ navigation }) => {
-  // const toast = useToast();
+const OTPScreen = ({ navigation, route }) => {
   const { colors } = useTheme();
   const dispatch = useDispatch();
+
+  const { isAuthLoading } = useSelector((state) => state.auth);
+
+  const dataParam = route?.params?.data || [];
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const [code, setCode] = useState("");
@@ -38,28 +42,6 @@ const OTPScreen = ({ navigation }) => {
   useEffect(() => {
     countDownTimer();
   }, []);
-
-  useEffect(() => {
-    const verifyOTP = async () => {
-      if (code.length === 7) {
-        const storedOTP = await getValueFor("OTPCode");
-        const confirmOTP = code.includes(storedOTP);
-        if (confirmOTP) {
-          dispatch(otpSuccess());
-          Toast.show({
-            type: "success",
-            text1: "OTP verified successfully!",
-          });
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Invalid OTP, kindly resend a new code!",
-          });
-        }
-      }
-    };
-    verifyOTP();
-  }, [code]);
 
   useEffect(() => {
     setDisabled(true);
@@ -85,33 +67,29 @@ const OTPScreen = ({ navigation }) => {
   };
 
   const onSubmit = async (data) => {
-    navigation.navigate("ChangePin");
-    // setButtonLoading(true);
-    // const { otp } = data;
-    // if (otp.length === 7) {
-    //   const storedOTP = await getValueFor("OTPCode");
-    //   const confirmOTP = otp.includes(storedOTP);
-    //   if (confirmOTP) {
-    //     dispatch(otpSuccess());
-    //     Toast.show({
-    //       type: "success",
-    //       text1: "OTP verified successfully!",
-    //     });
-    //   } else {
-    //     Toast.show({
-    //       type: "error",
-    //       text1: "Invalid OTP, kindly resend a new code!",
-    //     });
-    //   }
-    // }
+    const { otp } = data;
+
+    if (otp.length === 6) {
+      const payload = {
+        phone: dataParam?.phone,
+        otp: otp,
+        device_id:
+          Application.androidId ||
+          Device.modelName ||
+          `${Device.brand} ${Device.modelName}`,
+      };
+
+      await dispatch(verifyOTP(payload));
+    }
   };
 
   const resendCode = async () => {
     countDownTimer();
-    await dispatch(sendPhoneOTP());
+    await dispatch(resendPhoneOTP({ phone: dataParam?.phone }));
     Toast.show({
       type: "success",
-      text1: "New OTP code has been sent!",
+      title: "New OTP code has been sent!",
+      message: "New OTP Code has been sent!",
     });
   };
 
@@ -187,10 +165,10 @@ const OTPScreen = ({ navigation }) => {
 
           <StyledButton
             style={{ width: "80%" }}
-            disabled={buttonLoading ? true : false}
+            disabled={isAuthLoading ? true : false}
             onPress={handleSubmit(onSubmit)}
           >
-            {buttonLoading ? (
+            {isAuthLoading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <ButtonText>Confirm code</ButtonText>

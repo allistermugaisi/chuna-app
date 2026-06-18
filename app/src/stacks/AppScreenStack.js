@@ -17,7 +17,19 @@ import {
   CardStyleInterpolators,
 } from "@react-navigation/stack";
 
-import { Home, Profile } from "../screens/app";
+import {
+  Home,
+  Profile,
+  Marketplace,
+  CreateBidScreen,
+  BidDetailScreen,
+  MyBidsScreen,
+  CreateListing,
+  DepositScreen,
+  WithdrawScreen,
+  SellerDashboard,
+  StatementScreen,
+} from "../screens/app";
 
 import { Notifications } from "../global";
 
@@ -37,6 +49,45 @@ export const HomeStackScreen = ({ navigation }) => {
           headerShown: false,
         }}
       />
+      <HomeStack.Screen
+        name="CreateListing"
+        component={CreateListing}
+        options={{
+          title: "Create Listing",
+        }}
+      />
+      <HomeStack.Screen
+        name="SellerDashboard"
+        component={SellerDashboard}
+        options={{
+          title: "My Shares",
+        }}
+      />
+      <HomeStack.Screen
+        name="DepositScreen"
+        component={DepositScreen}
+        options={{
+          title: "Deposit to Account",
+        }}
+      />
+      <HomeStack.Screen
+        name="WithdrawScreen"
+        component={WithdrawScreen}
+        options={{
+          title: "Withdraw to M-Pesa",
+        }}
+      />
+      <HomeStack.Screen
+        name="StatementScreen"
+        component={StatementScreen}
+        options={{
+          title: "Statement",
+        }}
+      />
+      <HomeStack.Screen name="MyBids" component={MyBidsScreen} />
+      <HomeStack.Screen name="Marketplace" component={Marketplace} />
+      <HomeStack.Screen name="CreateBid" component={CreateBidScreen} />
+      <HomeStack.Screen name="BidDetail" component={BidDetailScreen} />
       <HomeStack.Screen
         name="Notifications"
         component={Notifications}

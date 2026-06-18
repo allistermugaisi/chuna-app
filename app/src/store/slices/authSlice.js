@@ -1,8 +1,7 @@
 import axios from "axios";
-import Toast from "react-native-toast-message";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { useNavigation } from "@react-navigation/native";
 
+import { Toast } from "../../components/Toast";
 import { save, getValueFor, remove } from "../../utils/secureStore";
 
 const initialState = {
@@ -10,11 +9,14 @@ const initialState = {
   updatedUser: null,
   isAuth: false,
   isLoading: false,
-  isForgotPassword: false,
-  isOTPValid: false,
-  isResetPassword: false,
   isAuthLoading: false,
+  isOTPRequired: false,
+  isOTPValid: false,
+  resendPhoneOTP: false,
+  isForgotPassword: false,
+  isResetPassword: false,
   error: null,
+  appInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -24,16 +26,33 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(auth.pending, (state) => {
-        state.isLoading = true;
+        state.isAuth = true;
+        state.isAuthLoading = true;
       })
       .addCase(auth.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isAuthLoading = false;
         state.isAuth = true;
+        state.appInitialized = true;
         state.user = action.payload;
       })
       .addCase(auth.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isAuth = false;
+        state.isAuthLoading = false;
+        state.appInitialized = false;
         state.error = action.payload?.message;
+      })
+      .addCase(authenticateUser.pending, (state) => {
+        state.isAuthLoading = true;
+        state.error = null;
+      })
+      .addCase(authenticateUser.fulfilled, (state, action) => {
+        state.isAuthLoading = false;
+        state.isAuth = action.payload.isAuth; // will be true
+      })
+      .addCase(authenticateUser.rejected, (state, action) => {
+        state.isAuthLoading = false;
+        state.isAuth = false;
+        state.error = action.payload || "Failed to authenticate user";
       })
       .addCase(register.pending, (state) => {
         state.isAuthLoading = true;
@@ -48,27 +67,47 @@ const authSlice = createSlice({
         state.error = action.payload?.message;
       })
       .addCase(login.pending, (state) => {
-        state.isAuthLoading = true;
+        state.isLoading = true;
+        state.isOTPRequired = false;
       })
       .addCase(login.fulfilled, (state, action) => {
-        state.isAuthLoading = false;
-        state.isAuth = true;
+        state.isLoading = false;
+        state.isOTPRequired = true;
         state.user = action.payload;
       })
       .addCase(login.rejected, (state, action) => {
-        state.isAuthLoading = false;
+        state.isLoading = false;
+        state.isOTPRequired = false;
         state.error = action.payload?.message;
       })
       .addCase(verifyOTP.pending, (state) => {
+        state.isAuth = false;
+        state.isOTPValid = false;
         state.isAuthLoading = true;
       })
       .addCase(verifyOTP.fulfilled, (state, action) => {
-        state.isAuthLoading = false;
+        state.isAuth = true;
         state.isOTPValid = true;
+        state.isAuthLoading = false;
       })
       .addCase(verifyOTP.rejected, (state, action) => {
         state.isAuthLoading = false;
+        state.isAuth = false;
         state.isOTPValid = false;
+        state.error = action.payload?.message;
+      })
+      .addCase(resendPhoneOTP.pending, (state) => {
+        state.isLoading = true;
+        state.resendPhoneOTP = false;
+      })
+      .addCase(resendPhoneOTP.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.resendPhoneOTP = true;
+        state.user = action.payload;
+      })
+      .addCase(resendPhoneOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        state.resendPhoneOTP = false;
         state.error = action.payload?.message;
       })
       .addCase(updateUserProfile.pending, (state) => {
@@ -129,7 +168,7 @@ const authSlice = createSlice({
   },
 });
 
-const baseUrl = "https://membershipapi.aakenya.co.ke";
+const baseUrl = "https://chus.tililtech.com";
 
 // Setup config headers and access token
 export const tokenConfig = async () => {
@@ -154,60 +193,56 @@ export const tokenConfig = async () => {
   return config;
 };
 
-// Setup config headers and access token
-export const otpTokenConfig = async () => {
-  // Get OTP token from secure store
-  const otpToken = await getValueFor("otpToken");
-
-  // Headers
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-
-  // If OTP token, add to headers
-  if (otpToken) {
-    config.headers["Authorization"] = `Bearer ${otpToken.replace(
-      /^"+|"+$/g,
-      "",
-    )}`;
-  }
-
-  return config;
-};
-
 // Check token and auth user
 export const auth = createAsyncThunk(
   "auth/authUser",
-  async (payload, { rejectWithValue }) => {
-    const { source, member_id } = payload;
-
+  async (_, { rejectWithValue }) => {
     try {
       const token = await tokenConfig();
+      // console.log("Auth Token", token);
 
-      const body = JSON.stringify({ source, member_id });
+      const { data } = await axios.get(`${baseUrl}/profile/member-info`, token);
+      // console.log("Auth Data", data);
 
-      const { data } = await axios.post(
-        `${baseUrl}/get_member_details`,
-        body,
-        token,
-      );
-      console.log("Auth Data", data);
-
-      if (data?.status_code !== 1000) {
+      if (data?.status_code !== 200) {
         await remove("user");
         await remove("userToken");
 
         // If the response is not successful, show an error toast
         Toast.show({
           type: "error",
-          text1: `${data?.status_desc}`,
-          text2: "Unable to authenticate. Please try again.",
+          title: `Oops! An error occurred.`,
+          message: "Unable to authenticate. Please try again.",
         });
         return rejectWithValue(data);
       } else {
         return data.data;
+      }
+    } catch (error) {
+      // Toast.show({
+      //   type: "error",
+      //   title: `Error ${error?.response?.data?.status_code}`,
+      //   message: `${error?.response?.data?.message}`,
+      // });
+      await remove("user");
+      await remove("userToken");
+      return rejectWithValue(error?.response?.data);
+    }
+  },
+);
+
+// === Check In-App token and auth user ===
+// === This is controlled by token expiry ===
+export const authenticateUser = createAsyncThunk(
+  "auth/authenticateUser",
+  async (payload = null, { rejectWithValue }) => {
+    // console.log("Auth Thunk - Payload:", payload);
+    try {
+      // If payload exists, use it directly (from SecureStore)
+      if (payload) {
+        return {
+          isAuth: true,
+        };
       }
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -247,11 +282,11 @@ export const register = createAsyncThunk(
       // Make request to register user
       const response = await axios.post(`${baseUrl}/register`, body, token);
 
-      if (response.data.status_code !== 1000) {
+      if (response.data.status_code !== 200) {
         Toast.show({
           type: "error",
-          text1: response.data.status_desc,
-          text2: "Failed to register. Please try again.",
+          title: response?.data?.status_desc,
+          message: "Failed to register. Please try again.",
         });
         return rejectWithValue(response.data);
       } else {
@@ -260,8 +295,8 @@ export const register = createAsyncThunk(
 
         Toast.show({
           type: "success",
-          text1: `${response.data.status_desc}`,
-          text2: "Registration successful",
+          title: `${response.data.status_desc}`,
+          message: "Registration successful",
         });
         return response.data;
       }
@@ -274,36 +309,29 @@ export const register = createAsyncThunk(
 export const login = createAsyncThunk(
   "auth/login",
   async (payload, { rejectWithValue }) => {
-    const token = await tokenConfig();
-
-    const { email, password } = payload;
+    const { phone, pin } = payload;
 
     try {
       // Request body
-      const body = JSON.stringify({ email, password });
+      const body = JSON.stringify({ phone, pin });
 
       // Make request to login user
-      const response = await axios.post(`${baseUrl}/login`, body, token);
+      const response = await axios.post(`${baseUrl}/auth/login`, body);
 
       const data = await response.data;
 
-      if (data?.status_code !== 1000) {
-        await remove("user");
-        await remove("userToken");
+      if (data?.status_code !== 200) {
         Toast.show({
           type: "error",
-          text1: `${data.status_desc}`,
-          text2: "Unable to login. Please try again.",
+          title: "Invalid credentials. Please try again!",
+          message: "Either your email address or password is incorrect.",
         });
         return rejectWithValue(data);
       } else {
-        // Save access token to secure store
-        await save("user", JSON.stringify(data.data));
-        await save("userToken", JSON.stringify(data.data.token));
         Toast.show({
           type: "success",
-          text1: `${data.status_desc}`,
-          text2: "Welcome back to AA Kenya",
+          title: `${data.status_desc}`,
+          message: "Enter OTP sent to your registered phone number",
         });
       }
     } catch (error) {
@@ -316,31 +344,77 @@ export const verifyOTP = createAsyncThunk(
   "auth/verifyOTP",
   async (payload, { rejectWithValue }) => {
     try {
-      // Get the OTP token from secure store
-      const token = await otpTokenConfig();
+      const { phone, otp, device_id } = payload;
 
-      const { otp } = payload;
+      const body = JSON.stringify({ phone, otp, device_id });
 
-      const body = JSON.stringify({ otp });
+      const response = await axios.post(`${baseUrl}/auth/verify-otp`, body);
 
-      const response = await axios.post(`${baseUrl}/verify_otp`, body, token);
+      const data = await response.data;
 
-      if (response.data.status_code !== 1000) {
+      if (data?.status_code !== 200) {
         Toast.show({
           type: "error",
-          text1: response.data.status_desc,
-          text2: "Failed to verify OTP. Please try again.",
+          title: response?.data?.status_desc,
+          message: "Failed to verify OTP. Please try again.",
         });
         return rejectWithValue(response.data);
       } else {
+        const authData = {
+          ...data.data,
+          expiresAt: Date.now() + data.data.expires_in * 1000,
+        };
+
+        // Save access token to secure store
+        await save("user", JSON.stringify(authData));
+        await save("userToken", JSON.stringify(data.data.access_token));
         Toast.show({
           type: "success",
-          text1: response.data.status_desc,
-          text2: "OTP verified successfully",
+          title: response?.data?.status_desc,
+          message: "OTP verified successfully",
         });
         return response.data;
       }
     } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  },
+);
+
+// Resend OTP
+export const resendPhoneOTP = createAsyncThunk(
+  "auth/resendPhoneOTP",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const { phone } = payload;
+
+      const body = JSON.stringify({ phone });
+
+      const response = await axios.post(`${baseUrl}/auth/resend-otp`, body, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.data;
+
+      if (data?.status_code !== 200) {
+        Toast.show({
+          type: "error",
+          title: "Failed to verify OTP. Please try again.",
+          message: `${response.data.status_desc}`,
+        });
+        return rejectWithValue(response.data);
+      } else {
+        Toast.show({
+          type: "info",
+          title: `Code sent to ${data?.data?.phone}`,
+          message: `${data?.message}`,
+        });
+        return response.data;
+      }
+    } catch (error) {
+      console.log("OTP Error:", error);
       return rejectWithValue(error.response.data);
     }
   },
@@ -375,15 +449,15 @@ export const changePassword = createAsyncThunk(
       if (response.data.status_code !== 1000) {
         Toast.show({
           type: "error",
-          text1: response.data.status_desc,
-          text2: "Failed to change password. Please try again.",
+          title: response.data.status_desc,
+          message: "Failed to change password. Please try again.",
         });
         return rejectWithValue(response.data);
       } else {
         Toast.show({
           type: "success",
-          text1: response.data.status_desc,
-          text2: "Password changed successfully",
+          title: response.data.status_desc,
+          message: "Password changed successfully",
         });
         // Clear user data from secure store
         await remove("user");
@@ -394,8 +468,8 @@ export const changePassword = createAsyncThunk(
     } catch (error) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2:
+        title: "Error",
+        message:
           error.response?.data?.message || "Failed to fetch junior members",
       });
       return rejectWithValue(error.response?.data);
@@ -432,8 +506,8 @@ export const logout = createAsyncThunk(
       await remove("userToken");
       Toast.show({
         type: "success",
-        text1: "Logged out successfully",
-        text2: "You have been logged out of your account.",
+        title: "Logged out successfully",
+        message: "You have been logged out of your account.",
       });
     } catch (error) {
       return rejectWithValue(error.response.data);

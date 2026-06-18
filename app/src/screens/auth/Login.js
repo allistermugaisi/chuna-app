@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
+import { useDispatch, useSelector } from "react-redux";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, HelperText, useTheme } from "react-native-paper";
@@ -19,16 +20,11 @@ import {
   AntDesign,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import Toast from "react-native-toast-message";
 
 // Redux imports
-import { useDispatch, useSelector } from "react-redux";
 import { getValueFor } from "../../utils/secureStore";
-// import { loginUser } from "../../store/actions/authActions";
-// import { clearErrors } from "../../store/actions/errorActions";
+import { login } from "../../store/slices/authSlice";
 
-// keyboard avoiding view
-// import TextInputAvoidingView from "../../components/KeyboardAvoidingWrapper";
 import { StyledButton, ButtonText } from "../../components/styles";
 
 const Login = ({ navigation }) => {
@@ -36,11 +32,9 @@ const Login = ({ navigation }) => {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
-  let error = useSelector((state) => state.error);
-  let emailPassword = useSelector((state) => state.auth.emailPassword);
+  const { isLoading } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [buttonLoading, setButtonLoading] = useState(false);
 
   const {
     control,
@@ -54,48 +48,8 @@ const Login = ({ navigation }) => {
 
   const onSubmit = async (data) => {
     // Attempt to authenticate user
-    // setButtonLoading(true);
-    // await dispatch(loginUser(data));
-  };
-
-  useEffect(() => {
-    // Check for register error
-    // if (error.id === "LOGIN_FAIL") {
-    //   setButtonLoading(false);
-    //   Toast.show({
-    //     type: "error",
-    //     text1: "Invalid credentials. Please try again!",
-    //     text2: "Either your email address or password is incorrect.",
-    //   });
-    //   dispatch(clearErrors());
-    // } else {
-    //   setButtonLoading(false);
-    // }
-  }, []);
-
-  useEffect(() => {
-    if (emailPassword) {
-      isEmailPhoneVerified();
-      setButtonLoading(false);
-      Toast.show({
-        type: "info",
-        text1: `You're almost there!`,
-        text2: "Please provide the requested OTP",
-      });
-    }
-  }, [emailPassword]);
-
-  const isEmailPhoneVerified = async () => {
-    const tempToken = await getValueFor("tempToken");
-    const tempUserToken = await getValueFor("tempUserToken");
-
-    if (tempToken) {
-      navigation.navigate("OTPVerifyPhone");
-    } else if (tempUserToken) {
-      navigation.navigate("OTPVerifyEmail");
-    } else {
-      navigation.navigate("OTPScreen");
-    }
+    await dispatch(login(data));
+    navigation.navigate("OTPScreen", { data });
   };
 
   return (
@@ -129,15 +83,19 @@ const Login = ({ navigation }) => {
       >
         <Controller
           control={control}
-          type="email"
-          name="email"
+          name="phone"
           render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               mode="outlined"
-              autoFocus={Platform.OS === "ios" ? true : false}
-              keyboardType="email-address"
-              label="Email address"
-              placeholder="Enter your email address"
+              keyboardType="numeric"
+              maxLength={12}
+              label="Phone Number"
+              style={
+                Platform.OS === "ios" && {
+                  paddingHorizontal: 0,
+                }
+              }
+              placeholder="254712345678"
               value={value}
               theme={{
                 colors: {
@@ -152,27 +110,31 @@ const Login = ({ navigation }) => {
           rules={{
             required: {
               value: true,
-              message: "Email address is required",
+              message: "Phone number is required",
             },
             pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Invalid email address",
+              value: /^(?:\+254|254|0)?[17]\d{8}$/,
+              message: "Please enter a valid mobile number",
             },
           }}
         />
+
         <HelperText type="error" style={styles.helper}>
-          {errors?.email?.message}
+          {errors?.phone?.message}
         </HelperText>
+
         <Controller
           control={control}
-          name="password"
+          name="pin"
           render={({ field: { onChange, value, onBlur } }) => (
             <TextInput
               mode="outlined"
-              label="Password"
-              secureTextEntry={showPassword ? false : true}
-              placeholder="Enter password"
+              label="PIN"
+              placeholder="Enter PIN"
               value={value}
+              keyboardType="number-pad"
+              maxLength={4} // Change to 6 if using a 6-digit PIN
+              secureTextEntry={!showPassword}
               theme={{
                 colors: {
                   primary: "#00ab55",
@@ -180,7 +142,7 @@ const Login = ({ navigation }) => {
                 },
               }}
               onBlur={onBlur}
-              onChangeText={(value) => onChange(value)}
+              onChangeText={(value) => onChange(value.replace(/[^0-9]/g, ""))}
               right={
                 <TextInput.Icon
                   onPress={togglePassword}
@@ -192,30 +154,32 @@ const Login = ({ navigation }) => {
           rules={{
             required: {
               value: true,
-              message: "Password is required",
+              message: "PIN is required",
             },
-            minLength: {
-              value: 8,
-              message: "Password should be atleast 8 characters",
+            pattern: {
+              value: /^[0-9]{4}$/,
+              message: "PIN must be exactly 4 digits",
             },
           }}
         />
 
-        <HelperText type="error">{errors?.password?.message}</HelperText>
+        <HelperText type="error">{errors?.pin?.message}</HelperText>
 
         <StyledButton
-          disabled={buttonLoading ? true : false}
+          disabled={isLoading ? true : false}
           onPress={handleSubmit(onSubmit)}
         >
-          {buttonLoading ? (
+          {isLoading ? (
             <ActivityIndicator color="#fff" size="small" />
           ) : (
             <ButtonText>Sign in</ButtonText>
           )}
         </StyledButton>
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity onPress={() => navigation.navigate("OTPScreen")}>
-            <Text style={{ color: "#00ab55", marginTop: 15 }}>Change pin?</Text>
+          <TouchableOpacity>
+            <Text style={{ color: "#00ab55", marginTop: 15 }}>
+              Terms of Service
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>
             <Text style={{ color: "#00ab55", marginTop: 15 }}>

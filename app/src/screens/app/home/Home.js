@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -21,14 +21,16 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import { getValueFor } from "../../../utils/secureStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ActionBottomSheet from "../../../components/ActionBottomSheet";
+import { Toast } from "../../../components/Toast";
 
 const { width } = Dimensions.get("window");
 const GREEN = "#4CAF20";
 const GREEN_DARK = "#388E3C";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers ───
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "Good Morning";
@@ -36,7 +38,7 @@ function getGreeting() {
   return "Good Evening";
 }
 
-// ─── Quick action button ──────────────────────────────────────────────────────
+// ─── Quick action button ───
 function QuickAction({ icon, label, onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -70,7 +72,7 @@ function QuickAction({ icon, label, onPress }) {
   );
 }
 
-// ─── Shortcut icon ────────────────────────────────────────────────────────────
+// ─── Shortcut icon ───
 function Shortcut({ icon, label, onPress }) {
   return (
     <TouchableOpacity
@@ -86,7 +88,7 @@ function Shortcut({ icon, label, onPress }) {
   );
 }
 
-// ─── Service tile ─────────────────────────────────────────────────────────────
+// ─── Service tile ───
 function ServiceTile({ label, icon, emoji, dark, onPress }) {
   return (
     <TouchableOpacity
@@ -110,7 +112,7 @@ function ServiceTile({ label, icon, emoji, dark, onPress }) {
   );
 }
 
-// ─── Transaction row ──────────────────────────────────────────────────────────
+// ─── Transaction row ───
 function TxRow({ icon, title, subtitle, amount, status, color }) {
   return (
     <View style={styles.txRow}>
@@ -136,7 +138,7 @@ function TxRow({ icon, title, subtitle, amount, status, color }) {
   );
 }
 
-// ─── Static data (outside component — no re-creation on render) ───────────────
+// ─── Static data (outside component — no re-creation on render) ───
 const QUICK_ACTIONS = [
   {
     icon: <FontAwesome name="send-o" size={24} color="white" />,
@@ -205,15 +207,31 @@ const TRANSACTIONS = [
   },
 ];
 
-// ─── Home screen ──────────────────────────────────────────────────────────────
+// ─── Home screen ───
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [balanceVisible, setBalanceVisible] = useState(true);
 
-  // ── Bottom sheet state ───────────────────────────────────────────────────
+  // ── Bottom sheet state ───
   // Keep action in a ref so updating it doesn't re-render the FlatList
   const [sheetVisible, setSheetVisible] = useState(false);
   const [sheetAction, setSheetAction] = useState("send_mobile");
+
+  useEffect(() => {
+    (async () => {
+      const data = await getValueFor("user");
+
+      if (data) {
+        const user = JSON.parse(data);
+        // console.log("Current USER:", user);
+        Toast.show({
+          type: "success",
+          title: "Login Successful",
+          message: `Welcome back to Chuna Sacco`,
+        });
+      }
+    })();
+  }, []);
 
   const openSheet = useCallback((action) => {
     setSheetAction(action);

@@ -26,7 +26,14 @@ import {
 const Tab = createBottomTabNavigator();
 
 const getTabBarVisibility = (route) => {
-  const hiddenScreens = ["Notifications", "Wallet", "SettingsScreen"]; // Screens where the tab bar should be hidden
+  const hiddenScreens = [
+    "Notifications",
+    "CreateListing",
+    "SellerDashboard",
+    "DepositScreen",
+    "WithdrawScreen",
+    "StatementScreen",
+  ]; // Screens where the tab bar should be hidden
   const routeName = getFocusedRouteNameFromRoute(route) ?? "Home";
 
   return hiddenScreens.includes(routeName) ? { display: "none" } : {};

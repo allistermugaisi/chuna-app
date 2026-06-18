@@ -19,6 +19,7 @@ import {
   FontAwesome,
   FontAwesome6,
 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height: SCREEN_H } = Dimensions.get("window");
@@ -28,9 +29,15 @@ const GREEN = "#4CAF20";
 
 // ─── Option row ───────────────────────────────────────────────────────────────
 function OptionRow({ item, isLast, onClose }) {
+  const navigation = useNavigation();
+
+  const handleAction = () => {
+    navigation.navigate(`${item.navigation}`);
+    onClose();
+  };
   return (
     <TouchableOpacity
-      onPress={onClose}
+      onPress={handleAction}
       activeOpacity={0.65}
       style={[styles.optionRow, !isLast && styles.optionBorder]}
     >
@@ -348,6 +355,7 @@ const SHEET_CONFIGS = {
         title: "Send to Mobile",
         subtitle: "Send money to Airtel Money, T-Kash & M-Pesa",
         badge: null,
+        navigation: "WithdrawScreen",
       },
     ],
   },
@@ -359,12 +367,14 @@ const SHEET_CONFIGS = {
         title: "My Account",
         subtitle: "Move funds between your Chuna accounts",
         badge: null,
+        navigation: "",
       },
       {
         icon: <FontAwesome name="send-o" size={24} color="black" />,
         title: "Other Accounts",
         subtitle: "Send funds to another Chuna member",
         badge: null,
+        navigation: "",
       },
       // {
       //   icon: "🌍",
@@ -381,8 +391,9 @@ const SHEET_CONFIGS = {
         icon: <FontAwesome6 name="money-bills" size={24} color="black" />,
         title: "Deposit via Mobile Money",
         subtitle: "Fund your account securely via mobile money",
-        badge: "Free Transfer",
+        badge: "",
         badgeColor: "#29B6D1",
+        navigation: "DepositScreen",
       },
     ],
   },
@@ -394,12 +405,14 @@ const SHEET_CONFIGS = {
         title: "Internal Standing Order",
         subtitle: "Set up recurring transfers to your own accounts",
         badge: null,
+        navigation: "",
       },
       {
         icon: <Entypo name="arrow-up" size={24} color="black" />,
         title: "External Standing Order",
         subtitle: "Set up recurring transfers to other accounts",
         badge: null,
+        navigation: "",
       },
     ],
   },
@@ -412,6 +425,7 @@ const SHEET_CONFIGS = {
         subtitle: "Lock savings at higher rates",
         badge: "zawadi points",
         badgeColor: GREEN,
+        navigation: "",
       },
     ],
   },
@@ -424,18 +438,21 @@ const SHEET_CONFIGS = {
         subtitle: "Get quick access to loans awaiting approval",
         badge: "Instant",
         badgeColor: "#F57C00",
+        navigation: "",
       },
       {
         icon: "🏠",
         title: "Running Loans",
         subtitle: "View and manage your active loans",
         badge: null,
+        navigation: "",
       },
       {
         icon: "🚗",
         title: "Apply Loans",
         subtitle: "Explore and apply for new loan products",
         badge: null,
+        navigation: "",
       },
     ],
   },
@@ -443,22 +460,25 @@ const SHEET_CONFIGS = {
     title: "Marketplace",
     items: [
       {
-        icon: "🏛️",
+        icon: <Feather name="plus" size={24} color="black" />,
         title: "Create Bid",
         subtitle: "Create a bid to sell ",
         badge: null,
+        navigation: "CreateListing",
       },
       {
-        icon: "📈",
+        icon: <FontAwesome name="line-chart" size={24} color="black" />,
         title: "Market",
         subtitle: "Browse available bids to invest in",
         badge: null,
+        navigation: "Marketplace",
       },
       {
-        icon: "🏛️",
+        icon: <Feather name="pie-chart" size={24} color="black" />,
         title: "My Shares",
         subtitle: "View your investment portfolio and returns",
         badge: null,
+        navigation: "SellerDashboard",
       },
     ],
   },
@@ -470,18 +490,21 @@ const SHEET_CONFIGS = {
         title: "Insurance",
         subtitle: "Motor, personal accident & more",
         badge: null,
+        navigation: "",
       },
       {
         icon: "💱",
         title: "Forex Exchange",
         subtitle: "Buy and sell foreign currency",
         badge: null,
+        navigation: "",
       },
       {
         icon: "🎁",
         title: "Rewards",
         subtitle: "Redeem your loyalty points",
         badge: null,
+        navigation: "",
       },
     ],
   },
@@ -494,6 +517,7 @@ const SHEET_CONFIGS = {
         subtitle: "Send money to a VOOMA wallet",
         badge: "Free Transfer",
         badgeColor: "#29B6D1",
+        navigation: "",
       },
     ],
   },
@@ -505,6 +529,7 @@ const SHEET_CONFIGS = {
         title: "View Next of Kin",
         subtitle: "See your registered next of kin details",
         badge: null,
+        navigation: "",
       },
     ],
   },
@@ -516,12 +541,14 @@ const SHEET_CONFIGS = {
         title: "Buy for Myself",
         subtitle: "Top up your own line instantly",
         badge: null,
+        navigation: "",
       },
       {
         icon: "🎁",
         title: "Buy for Others",
         subtitle: "Send airtime to another number",
         badge: null,
+        navigation: "",
       },
     ],
   },
@@ -533,6 +560,7 @@ const SHEET_CONFIGS = {
         title: "Profile",
         subtitle: "Manage your account details and settings",
         badge: null,
+        navigation: "",
       },
     ],
   },
@@ -544,12 +572,14 @@ const SHEET_CONFIGS = {
         title: "Scan to Pay",
         subtitle: "Scan a merchant QR code to pay",
         badge: null,
+        navigation: "",
       },
       {
         icon: "⬛",
         title: "My QR Code",
         subtitle: "Show your QR code to receive money",
         badge: null,
+        navigation: "",
       },
     ],
   },
