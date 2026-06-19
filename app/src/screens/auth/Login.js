@@ -3,11 +3,12 @@ import {
   View,
   Text,
   Platform,
-  StyleSheet,
   StatusBar,
+  StyleSheet,
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,16 +16,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, HelperText, useTheme } from "react-native-paper";
 import {
-  FontAwesome6,
   Ionicons,
   AntDesign,
+  FontAwesome6,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 
 // Redux imports
-import { getValueFor } from "../../utils/secureStore";
+import { Toast } from "../../components/Toast";
 import { login } from "../../store/slices/authSlice";
+import { getValueFor } from "../../utils/secureStore";
 
+import { PhoneInput } from "../../components/PhoneInput";
 import { StyledButton, ButtonText } from "../../components/styles";
 
 const Login = ({ navigation }) => {
@@ -35,6 +38,9 @@ const Login = ({ navigation }) => {
   const { isLoading } = useSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState(null);
 
   const {
     control,
@@ -47,13 +53,31 @@ const Login = ({ navigation }) => {
   };
 
   const onSubmit = async (data) => {
-    // Attempt to authenticate user
-    await dispatch(login(data));
-    navigation.navigate("OTPScreen", { data });
+    const standardPhone = `254${phone}`;
+
+    if (!/^254(7|1)\d{8}$/.test(standardPhone)) {
+      Toast.show({
+        type: "error",
+        title: "Invalid Phone Number",
+        message: "Enter a valid phone number.",
+      });
+      return;
+    }
+
+    const payload = {
+      ...data,
+      phone: standardPhone,
+    };
+
+    await dispatch(login(payload)).unwrap();
+    navigation.navigate("OTPScreen", { data: payload });
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <StatusBar barStyle="default" />
       <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* <FontAwesome6
@@ -81,47 +105,21 @@ const Login = ({ navigation }) => {
           },
         ]}
       >
-        <Controller
-          control={control}
-          name="phone"
-          render={({ field: { onChange, value, onBlur } }) => (
-            <TextInput
-              mode="outlined"
-              keyboardType="numeric"
-              maxLength={12}
-              label="Phone Number"
-              style={
-                Platform.OS === "ios" && {
-                  paddingHorizontal: 0,
-                }
-              }
-              placeholder="254712345678"
-              value={value}
-              theme={{
-                colors: {
-                  primary: "#00ab55",
-                  underlineColor: "transparent",
-                },
-              }}
-              onBlur={onBlur}
-              onChangeText={(value) => onChange(value)}
-            />
-          )}
-          rules={{
-            required: {
-              value: true,
-              message: "Phone number is required",
-            },
-            pattern: {
-              value: /^(?:\+254|254|0)?[17]\d{8}$/,
-              message: "Please enter a valid mobile number",
-            },
-          }}
-        />
+        <View style={{ marginBottom: 10 }}>
+          <PhoneInput
+            value={phone}
+            // onChangeText={setPhone?.replace(/^\+254/, "")}
+            onChangeText={(value) => {
+              const cleaned = value
+                ?.replace(/\D/g, "")
+                ?.replace(/^254/, "")
+                ?.replace(/^0/, "");
 
-        <HelperText type="error" style={styles.helper}>
-          {errors?.phone?.message}
-        </HelperText>
+              setPhone(cleaned);
+            }}
+            onCountryChange={(c) => setCountry(c)}
+          />
+        </View>
 
         <Controller
           control={control}
@@ -189,7 +187,7 @@ const Login = ({ navigation }) => {
         </View>
       </Animatable.View>
       {/* </TextInputAvoidingView> */}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

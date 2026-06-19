@@ -8,6 +8,7 @@ import AuthStackScreen from "./AuthScreenStack";
 import { auth, logout } from "../store/slices/authSlice";
 import { getValueFor } from "../utils/secureStore";
 import ChunaLoader from "../components/ChunaLoader";
+import { ToastProvider } from "../components/Toast";
 
 const RootStack = () => {
   const dispatch = useDispatch();
@@ -81,6 +82,7 @@ const RootStack = () => {
 
   return (
     <SafeAreaProvider>
+      <ToastProvider />
       <NavigationContainer>
         {isAuth ? <AppTabStack /> : <AuthStackScreen />}
       </NavigationContainer>

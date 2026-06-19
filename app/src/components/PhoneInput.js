@@ -16,8 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height: H } = Dimensions.get("window");
 
-// ─── Chuna Sacco brand tokens ──────────────────────────────────────────────────
-const GREEN = "#4CAF20";
+// ─── Chuna Sacco brand tokens ───
+const GREEN = "#00ab55";
 const GREEN_LIGHT = "#E8F5E9";
 const GREEN_DARK = "#388E3C";
 const BG = "#F4F6F8";
@@ -27,10 +27,10 @@ const TEXT_FAINT = "#999999";
 const BORDER = "#EEEEEE";
 const WHITE = "#FFFFFF";
 
-// ─── Country data ──────────────────────────────────────────────────────────────
+// ─── Country data ───
 const COUNTRIES = [{ code: "KE", name: "Kenya", dial: "+254", flag: "🇰🇪" }];
 
-// ─── Country picker modal ──────────────────────────────────────────────────────
+// ─── Country picker modal ───
 function CountryPickerModal({ visible, selected, onSelect, onClose }) {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
@@ -323,7 +323,7 @@ const m = StyleSheet.create({
   emptyText: { fontSize: 14, color: TEXT_FAINT },
 });
 
-// ─── PhoneInput ────────────────────────────────────────────────────────────────
+// ─── PhoneInput ───
 export function PhoneInput({
   value,
   onChangeText,
@@ -452,8 +452,8 @@ const pi = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: WHITE,
-    borderRadius: 12,
-    borderWidth: 1.5,
+    borderRadius: 5,
+    borderWidth: 2,
     height: 52,
     overflow: "hidden",
   },
@@ -492,7 +492,7 @@ const pi = StyleSheet.create({
   errorTxt: { fontSize: 12, color: "#C62828", fontWeight: "500" },
 });
 
-// ─── Usage ────────────────────────────────────────────────────────────────────
+// ─── Usage ───
 //
 // import { PhoneInput } from "../components/PhoneInput";
 //
