@@ -229,7 +229,7 @@ export default function ActionBottomSheet({ visible, action, onClose }) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ───
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// ─── Per-action sheet content ─────────────────────────────────────────────────
+// ─── Per-action sheet content ───
 const SHEET_CONFIGS = {
   send_mobile: {
     title: "Send to Mobile",
@@ -368,14 +368,7 @@ const SHEET_CONFIGS = {
         title: "My Account",
         subtitle: "Move funds between your Chuna accounts",
         badge: null,
-        navigation: "",
-      },
-      {
-        icon: <FontAwesome name="send-o" size={24} color="black" />,
-        title: "Other Accounts",
-        subtitle: "Send funds to another Chuna member",
-        badge: null,
-        navigation: "",
+        navigation: "TransferScreen",
       },
     ],
   },
@@ -427,28 +420,28 @@ const SHEET_CONFIGS = {
   loans: {
     title: "Loans",
     items: [
-      {
-        icon: "⚡",
-        title: "Pending Approval Loans",
-        subtitle: "Get quick access to loans awaiting approval",
-        badge: "Instant",
-        badgeColor: "#F57C00",
-        navigation: "",
-      },
+      // {
+      //   icon: "⚡",
+      //   title: "Pending Approval Loans",
+      //   subtitle: "Get quick access to loans awaiting approval",
+      //   badge: "Instant",
+      //   badgeColor: "#F57C00",
+      //   navigation: "",
+      // },
       {
         icon: "🏠",
         title: "Running Loans",
         subtitle: "View and manage your active loans",
         badge: null,
-        navigation: "",
+        navigation: "LoanScreen",
       },
-      {
-        icon: "🚗",
-        title: "Apply Loans",
-        subtitle: "Explore and apply for new loan products",
-        badge: null,
-        navigation: "",
-      },
+      // {
+      //   icon: "🚗",
+      //   title: "Apply Loans",
+      //   subtitle: "Explore and apply for new loan products",
+      //   badge: null,
+      //   navigation: "",
+      // },
     ],
   },
   invest: {
@@ -461,13 +454,13 @@ const SHEET_CONFIGS = {
         badge: null,
         navigation: "CreateListing",
       },
-      {
-        icon: <FontAwesome name="line-chart" size={24} color="black" />,
-        title: "Market",
-        subtitle: "Browse available bids to invest in",
-        badge: null,
-        navigation: "Marketplace",
-      },
+      // {
+      //   icon: <FontAwesome name="line-chart" size={24} color="black" />,
+      //   title: "Market",
+      //   subtitle: "Browse available bids to invest in",
+      //   badge: null,
+      //   navigation: "Marketplace",
+      // },
       {
         icon: <Feather name="pie-chart" size={24} color="black" />,
         title: "My Shares",
@@ -519,13 +512,13 @@ const SHEET_CONFIGS = {
   account_balance: {
     title: "Account Balance",
     items: [
-      // {
-      //   icon: "👨‍👩‍👧",
-      //   title: "View Next of Kin",
-      //   subtitle: "See your registered next of kin details",
-      //   badge: null,
-      //   navigation: "",
-      // },
+      {
+        icon: "👨‍👩‍👧",
+        title: "Account Balances",
+        subtitle: "Access your current balances across all SACCO accounts",
+        badge: null,
+        navigation: "AccountBalances",
+      },
     ],
   },
   airtime: {
@@ -562,30 +555,30 @@ const SHEET_CONFIGS = {
   reports: {
     title: "Reports",
     items: [
-      {
-        icon: (
-          <MaterialCommunityIcons
-            name="receipt-text-outline"
-            size={24}
-            color="black"
-          />
-        ),
-        title: "Mini Statement",
-        subtitle: "See your latest account activity at a glance",
-        navigation: "",
-      },
-      {
-        icon: (
-          <MaterialCommunityIcons
-            name="file-document-multiple-outline"
-            size={24}
-            color="black"
-          />
-        ),
-        title: "Full Statement",
-        subtitle: "Download or review your complete financial history",
-        navigation: "",
-      },
+      // {
+      //   icon: (
+      //     <MaterialCommunityIcons
+      //       name="receipt-text-outline"
+      //       size={24}
+      //       color="black"
+      //     />
+      //   ),
+      //   title: "Loans Guaranteed",
+      //   subtitle: "See your latest account activity at a glance",
+      //   navigation: "LoanStatement",
+      // },
+      // {
+      //   icon: (
+      //     <MaterialCommunityIcons
+      //       name="file-document-multiple-outline"
+      //       size={24}
+      //       color="black"
+      //     />
+      //   ),
+      //   title: "Running Loans",
+      //   subtitle: "Download or review your complete financial history",
+      //   navigation: "",
+      // },
       {
         icon: (
           <MaterialCommunityIcons
@@ -596,19 +589,7 @@ const SHEET_CONFIGS = {
         ),
         title: "Loan Statement",
         subtitle: "Monitor loan disbursements, repayments, and balances",
-        navigation: "",
-      },
-      {
-        icon: (
-          <MaterialCommunityIcons
-            name="calendar-check-outline"
-            size={24}
-            color="black"
-          />
-        ),
-        title: "Repayment Schedule",
-        subtitle: "Stay on track with your upcoming loan payments",
-        navigation: "",
+        navigation: "LoanStatement",
       },
     ],
   },

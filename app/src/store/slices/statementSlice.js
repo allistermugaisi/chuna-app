@@ -16,7 +16,7 @@ const initialState = {
   error: null,
 };
 
-// ── GET /profile/mini-statement ───────────────────────────────────────────────
+// ── GET /profile/mini-statement ───
 export const fetchMiniStatement = createAsyncThunk(
   "statement/fetchMiniStatement",
   async (_, { rejectWithValue }) => {
@@ -36,7 +36,7 @@ export const fetchMiniStatement = createAsyncThunk(
   },
 );
 
-// ── GET /transactions/member-statement ────────────────────────────────────────
+// ── GET /transactions/member-statement ───
 export const fetchFullStatement = createAsyncThunk(
   "statement/fetchFullStatement",
   async ({ date_from, date_to, doc_no = "" }, { rejectWithValue }) => {

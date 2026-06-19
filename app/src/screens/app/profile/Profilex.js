@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   View,
   Text,
-  Alert,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -10,22 +9,36 @@ import {
   Animated,
   Dimensions,
   Linking,
-  ActivityIndicator,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { auth, logout } from "../../../store/slices/authSlice";
+import { Ionicons } from "@expo/vector-icons";
+
+import { auth } from "../../../store/slices/authSlice";
 
 const { width } = Dimensions.get("window");
+
+// ─── Sample user data — replace with real data from your API/state ───
+const USER = {
+  fullName: "Allister Mugaisi Atsenga",
+  initials: "AA",
+  lastSeen: "Last seen at 11:41 pm | Wednesday 27",
+  email: "allistermugaisi@gmail.com",
+  phone: "+254 790 516 067",
+  physicalAddress: "Kekky, Kekia",
+  postalAddress: "Kenrb, NA, Kenai",
+  kraPin: "A013699430E",
+  nationalId: "38196173",
+  occupation: null, // null renders as "(Occupation not available)"
+};
 
 const SUPPORT = {
   email: "chunasacco@uonbi.ac.ke",
   phones: ["+254 705 951 672"],
 };
 
-// ─── Individual row item ──────────────────────────────────────────────────────
+// ─── Individual row item ───
 function InfoRow({ label, value, isLast }) {
   const isEmpty = !value;
   return (
@@ -42,14 +55,15 @@ function InfoRow({ label, value, isLast }) {
   );
 }
 
-// ─── Main screen ──────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProfileScreen({ navigation }) {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
-  const { user, loggingOut } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  // console.log("Current User", user);
 
-  // Fade-up animation on mount
+  // Subtle fade-up animation on mount
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
 
@@ -73,32 +87,6 @@ export default function ProfileScreen({ navigation }) {
     dispatch(auth()).unwrap();
   }, []);
 
-  // ── Logout ───────────────────────────────────────────────────────────────────
-  const handleLogout = useCallback(() => {
-    Alert.alert(
-      "Log out?",
-      "You will need to sign in again to access your account.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log out",
-          style: "destructive",
-          onPress: () => dispatch(logout()),
-        },
-      ],
-    );
-  }, [dispatch]);
-
-  const initials = user?.name
-    ? user.name
-        .trim()
-        .split(" ")
-        .map((w) => w[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
-    : "??";
-
   const fields = [
     { label: "Member Number", value: user?.member_no },
     { label: "Full Name", value: user?.name },
@@ -114,14 +102,14 @@ export default function ProfileScreen({ navigation }) {
         backgroundColor="transparent"
       />
 
-      {/* ── Header gradient ───────────────────────────────────────────────── */}
+      {/* ── Header gradient ── */}
       <LinearGradient
         colors={["#00703C", "#2E8B57"]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 12 }]}
       >
-        {/* Back */}
+        {/* Back button */}
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation?.goBack()}
@@ -133,16 +121,19 @@ export default function ProfileScreen({ navigation }) {
         {/* Avatar */}
         <View style={styles.avatarOuter}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
+            <Text style={styles.avatarText}>{USER.initials}</Text>
           </View>
+          <TouchableOpacity style={styles.addBtn} activeOpacity={0.8}>
+            <Ionicons name="add" size={16} color="#fff" />
+          </TouchableOpacity>
         </View>
 
-        {/* Name */}
-        <Text style={styles.name}>{user?.name ?? "—"}</Text>
-        <Text style={styles.memberTag}>Member {user?.member_no ?? "—"}</Text>
+        {/* Name + last seen */}
+        <Text style={styles.name}>{user?.name}</Text>
+        <Text style={styles.lastSeen}>{USER.lastSeen}</Text>
       </LinearGradient>
 
-      {/* ── Body ─────────────────────────────────────────────────────────────── */}
+      {/* ── Scrollable body ── */}
       <Animated.View
         style={[
           styles.body,
@@ -152,7 +143,7 @@ export default function ProfileScreen({ navigation }) {
         <ScrollView
           contentContainerStyle={[
             styles.scroll,
-            { paddingBottom: insets.bottom + 32 },
+            { paddingBottom: insets.bottom + 24 },
           ]}
           showsVerticalScrollIndicator={false}
         >
@@ -168,30 +159,15 @@ export default function ProfileScreen({ navigation }) {
             ))}
           </View>
 
-          {/* ── Logout button ───────────────────────────────────────────────── */}
-          <TouchableOpacity
-            style={[styles.logoutBtn, loggingOut && styles.logoutBtnDisabled]}
-            onPress={handleLogout}
-            disabled={loggingOut}
-            activeOpacity={0.85}
-          >
-            {loggingOut ? (
-              <ActivityIndicator size="small" color="#C62828" />
-            ) : (
-              <MaterialCommunityIcons name="logout" size={20} color="#C62828" />
-            )}
-            <Text style={styles.logoutTxt}>
-              {loggingOut ? "Logging out…" : "Log out"}
-            </Text>
-          </TouchableOpacity>
-
           {/* Support footer */}
           <View style={styles.support}>
-            <Text style={styles.supportText}>For support contact</Text>
+            <Text style={styles.supportText}>For support issues contact</Text>
             <TouchableOpacity
               onPress={() => Linking.openURL(`mailto:${SUPPORT.email}`)}
             >
-              <Text style={styles.supportEmail}>{SUPPORT.email}</Text>
+              <Text style={styles.supportText}>
+                {SUPPORT.email} <Text style={styles.supportOr}>or</Text>
+              </Text>
             </TouchableOpacity>
             {SUPPORT.phones.map((p) => (
               <TouchableOpacity
@@ -210,11 +186,19 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
+// ─── Styles ───
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F5F7" },
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F7",
+  },
 
   // Header
-  header: { alignItems: "center", paddingBottom: 32, paddingHorizontal: 20 },
+  header: {
+    alignItems: "center",
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+  },
   backBtn: {
     alignSelf: "flex-start",
     width: 40,
@@ -225,7 +209,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
   },
-  avatarOuter: { alignItems: "center", marginBottom: 14 },
+  avatarOuter: {
+    alignItems: "center",
+    marginBottom: 14,
+  },
   avatar: {
     width: 78,
     height: 78,
@@ -242,23 +229,43 @@ const styles = StyleSheet.create({
     color: "#C8D5E8",
     letterSpacing: 1,
   },
+  addBtn: {
+    position: "absolute",
+    bottom: -8,
+    right: -8,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#2ABFAB",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
   name: {
     fontSize: 22,
     fontWeight: "700",
     color: "#FFFFFF",
     textAlign: "center",
     letterSpacing: 0.2,
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  memberTag: {
+  lastSeen: {
     fontSize: 13,
     color: "rgba(255,255,255,0.72)",
     textAlign: "center",
+    letterSpacing: 0.1,
   },
 
   // Body
-  body: { flex: 1, marginTop: -1 },
-  scroll: { paddingTop: 28, paddingHorizontal: 16 },
+  body: {
+    flex: 1,
+    marginTop: -1, // overlap to hide gradient seam
+  },
+  scroll: {
+    paddingTop: 28,
+    paddingHorizontal: 16,
+  },
 
   // Info card
   card: {
@@ -270,7 +277,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.07,
     shadowRadius: 12,
     elevation: 3,
-    marginBottom: 20,
+    marginBottom: 32,
   },
   row: {
     flexDirection: "row",
@@ -298,41 +305,31 @@ const styles = StyleSheet.create({
     textAlign: "right",
     flex: 1,
   },
-  rowValueEmpty: { color: "#ABABBC", fontWeight: "400", fontStyle: "italic" },
-
-  // Logout button
-  logoutBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    backgroundColor: "#FFF5F5",
-    borderRadius: 14,
-    paddingVertical: 16,
-    marginBottom: 28,
-    borderWidth: 1.5,
-    borderColor: "#FECACA",
+  rowValueEmpty: {
+    color: "#ABABBC",
+    fontWeight: "400",
+    fontStyle: "italic",
   },
-  logoutBtnDisabled: { opacity: 0.6 },
-  logoutTxt: { fontSize: 16, fontWeight: "700", color: "#C62828" },
 
   // Support footer
-  support: { alignItems: "center", gap: 3 },
+  support: {
+    alignItems: "center",
+    paddingHorizontal: 20,
+    gap: 2,
+  },
   supportText: {
     fontSize: 13,
     color: "#9A9AAF",
     textAlign: "center",
     lineHeight: 20,
   },
-  supportEmail: {
+  supportOr: {
     fontSize: 13,
-    color: "#1A1A2E",
-    fontWeight: "600",
-    textAlign: "center",
+    color: "#9A9AAF",
   },
   supportPhone: {
     fontSize: 14,
-    color: "#00703C",
+    color: "#1A1A2E",
     fontWeight: "700",
     textAlign: "center",
     lineHeight: 22,

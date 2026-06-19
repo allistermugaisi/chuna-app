@@ -29,7 +29,11 @@ import {
   WithdrawScreen,
   SellerDashboard,
   FullStatement,
+  TransferScreen,
+  LoanScreen,
+  LoanStatement,
   AllMiniStatement,
+  AccountBalance,
 } from "../screens/app";
 
 import { Notifications } from "../global";
@@ -79,6 +83,27 @@ export const HomeStackScreen = ({ navigation }) => {
         }}
       />
       <HomeStack.Screen
+        name="TransferScreen"
+        component={TransferScreen}
+        options={{
+          title: "Money Transfer",
+        }}
+      />
+      <HomeStack.Screen
+        name="LoanScreen"
+        component={LoanScreen}
+        options={{
+          title: "Money Transfer",
+        }}
+      />
+      <HomeStack.Screen
+        name="LoanStatement"
+        component={LoanStatement}
+        options={{
+          title: "Loan Statement",
+        }}
+      />
+      <HomeStack.Screen
         name="MiniStatement"
         component={AllMiniStatement}
         options={{
@@ -90,6 +115,13 @@ export const HomeStackScreen = ({ navigation }) => {
         component={FullStatement}
         options={{
           title: "Full Statement",
+        }}
+      />
+      <HomeStack.Screen
+        name="AccountBalances"
+        component={AccountBalance}
+        options={{
+          title: "Account Balances",
         }}
       />
       <HomeStack.Screen name="MyBids" component={MyBidsScreen} />

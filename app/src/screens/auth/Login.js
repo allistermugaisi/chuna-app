@@ -6,6 +6,7 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -76,16 +77,12 @@ const Login = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
       <StatusBar barStyle="default" />
+
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        {/* <FontAwesome6
-          name="arrow-left"
-          size={24}
-          color="white"
-          onPress={() => navigation.navigate("Welcome")}
-        /> */}
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation?.goBack()}
@@ -93,9 +90,10 @@ const Login = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={20} color="#fff" />
         </TouchableOpacity>
+
         <Text style={styles.text_header}>Welcome back!</Text>
       </View>
-      {/* <TextInputAvoidingView style={{ marginBottom: insets.bottom }}> */}
+
       <Animatable.View
         animation="fadeInUpBig"
         style={[
@@ -105,88 +103,96 @@ const Login = ({ navigation }) => {
           },
         ]}
       >
-        <View style={{ marginBottom: 10 }}>
-          <PhoneInput
-            value={phone}
-            // onChangeText={setPhone?.replace(/^\+254/, "")}
-            onChangeText={(value) => {
-              const cleaned = value
-                ?.replace(/\D/g, "")
-                ?.replace(/^254/, "")
-                ?.replace(/^0/, "");
-
-              setPhone(cleaned);
-            }}
-            onCountryChange={(c) => setCountry(c)}
-          />
-        </View>
-
-        <Controller
-          control={control}
-          name="pin"
-          render={({ field: { onChange, value, onBlur } }) => (
-            <TextInput
-              mode="outlined"
-              label="PIN"
-              placeholder="Enter PIN"
-              value={value}
-              keyboardType="number-pad"
-              maxLength={4} // Change to 6 if using a 6-digit PIN
-              secureTextEntry={!showPassword}
-              theme={{
-                colors: {
-                  primary: "#00ab55",
-                  underlineColor: "transparent",
-                },
-              }}
-              onBlur={onBlur}
-              onChangeText={(value) => onChange(value.replace(/[^0-9]/g, ""))}
-              right={
-                <TextInput.Icon
-                  onPress={togglePassword}
-                  name={showPassword ? "eye-off" : "eye"}
-                />
-              }
-            />
-          )}
-          rules={{
-            required: {
-              value: true,
-              message: "PIN is required",
-            },
-            pattern: {
-              value: /^[0-9]{4}$/,
-              message: "PIN must be exactly 4 digits",
-            },
-          }}
-        />
-
-        <HelperText type="error">{errors?.pin?.message}</HelperText>
-
-        <StyledButton
-          disabled={isLoading ? true : false}
-          onPress={handleSubmit(onSubmit)}
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            styles.formContent,
+            { paddingTop: insets.top, paddingBottom: insets.bottom + 24 },
+          ]}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <ButtonText>Sign in</ButtonText>
-          )}
-        </StyledButton>
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity>
-            <Text style={{ color: "#00ab55", marginTop: 15 }}>
-              Terms of Service
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={{ color: "#00ab55", marginTop: 15 }}>
-              Privacy policy
-            </Text>
-          </TouchableOpacity>
-        </View>
+          <View style={{ marginBottom: 10 }}>
+            <PhoneInput
+              value={phone}
+              onChangeText={(value) => {
+                const cleaned = value
+                  ?.replace(/\D/g, "")
+                  ?.replace(/^254/, "")
+                  ?.replace(/^0/, "");
+
+                setPhone(cleaned);
+              }}
+              onCountryChange={(c) => setCountry(c)}
+            />
+          </View>
+
+          <Controller
+            control={control}
+            name="pin"
+            render={({ field: { onChange, value, onBlur } }) => (
+              <TextInput
+                mode="outlined"
+                label="PIN"
+                placeholder="Enter PIN"
+                value={value}
+                keyboardType="number-pad"
+                maxLength={4}
+                secureTextEntry={!showPassword}
+                theme={{
+                  colors: {
+                    primary: "#00ab55",
+                    underlineColor: "transparent",
+                  },
+                }}
+                onBlur={onBlur}
+                onChangeText={(value) => onChange(value.replace(/[^0-9]/g, ""))}
+                right={
+                  <TextInput.Icon
+                    onPress={togglePassword}
+                    name={showPassword ? "eye-off" : "eye"}
+                  />
+                }
+              />
+            )}
+            rules={{
+              required: {
+                value: true,
+                message: "PIN is required",
+              },
+              pattern: {
+                value: /^[0-9]{4}$/,
+                message: "PIN must be exactly 4 digits",
+              },
+            }}
+          />
+
+          <HelperText type="error">{errors?.pin?.message}</HelperText>
+
+          <StyledButton disabled={isLoading} onPress={handleSubmit(onSubmit)}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <ButtonText>Sign in</ButtonText>
+            )}
+          </StyledButton>
+
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-around" }}
+          >
+            <TouchableOpacity>
+              <Text style={{ color: "#00ab55", marginTop: 15 }}>
+                Terms of Service
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={{ color: "#00ab55", marginTop: 15 }}>
+                Privacy policy
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </Animatable.View>
-      {/* </TextInputAvoidingView> */}
     </KeyboardAvoidingView>
   );
 };
@@ -207,12 +213,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   footer: {
-    flex: 1,
+    flex: Platform.OS === "ios" ? 2 : 4,
     backgroundColor: "#fff",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
-    paddingVertical: height * 0.04,
   },
   text_header: {
     color: "#fff",

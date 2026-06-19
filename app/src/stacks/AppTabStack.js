@@ -34,6 +34,10 @@ const getTabBarVisibility = (route) => {
     "WithdrawScreen",
     "MiniStatement",
     "FullStatement",
+    "TransferScreen",
+    "LoanScreen",
+    "LoanStatement",
+    // "AccountBalances",
   ]; // Screens where the tab bar should be hidden
   const routeName = getFocusedRouteNameFromRoute(route) ?? "Home";
 
